@@ -14,6 +14,18 @@ import java.util.List;
 @Dao
 public interface TaskDao {
 
+    @Query("SELECT * FROM tasks")
+    LiveData<List<Task>> getAll();
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    LiveData<Task> getById(int taskId);
+
+    @Query("SELECT * FROM tasks ORDER BY id DESC")
+    LiveData<List<Task>> getAllTasks();
+
+    @Query("DELETE FROM tasks WHERE id = :id")
+    void deleteById(int id);
+
     @Insert
     void insert(Task task);
 
@@ -22,16 +34,4 @@ public interface TaskDao {
 
     @Delete
     void delete(Task task);
-
-    @Query("SELECT * FROM tasks ORDER BY priority DESC")
-    List<Task> getAll();
-
-    @Query("SELECT * FROM tasks WHERE id = :taskId")
-    Task getById(int taskId);
-
-    @Query("SELECT * FROM tasks ORDER BY id DESC")
-    LiveData<List<Task>> getAllTasks();
-
-    @Query("DELETE FROM tasks WHERE id = :id")
-    void deleteById(int id);
 }

@@ -9,6 +9,7 @@ public class Task {
 
     @PrimaryKey(autoGenerate = true)
     public int id;
+    public String title;
 
     public double latitude;
     public double longitude;
@@ -42,5 +43,13 @@ public class Task {
                 ", status=" + status +
                 ", date=" + createdAt +
                 '}';
+    }
+
+    public double getLatitude() {
+        return this.latitude;
+    }
+
+    public double getLongitude() {
+        return this.longitude;
     }
 }
