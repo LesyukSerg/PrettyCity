@@ -1,61 +1,55 @@
 package com.raziel.prettycity.ui;
 
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.Task;
 
-import java.util.ArrayList;
-import java.util.List;
+public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
-
-    private List<Task> taskList = new ArrayList<>();
-
-    public void submitList(List<Task> tasks) {
-        this.taskList = tasks;
-        notifyDataSetChanged();
+    public TaskAdapter() {
+        super(DIFF_CALLBACK);
     }
 
-    public Task getTaskAt(int position) {
-        return taskList.get(position);
-    }
+    static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
+        @Override public boolean areItemsTheSame(@NonNull Task oldItem, @NonNull Task newItem) {
+            return oldItem.id == newItem.id;
+        }
 
-    @NonNull @Override
-    public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_task, parent, false);
-        return new TaskViewHolder(itemView);
+        @Override public boolean areContentsTheSame(@NonNull Task oldItem, @NonNull Task newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
+
+    @NonNull
+    @Override public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new TaskViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_task, parent, false));
     }
 
     @Override public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task task = taskList.get(position);
-        holder.textDate.setText(task.createdAt);
-        holder.textLocation.setText(task.latitude + ", " + task.longitude);
-        if (task.photoBeforePath != null) {
-            holder.imageView.setImageBitmap(BitmapFactory.decodeFile(task.photoBeforePath));
-        }
+        holder.bind(getItem(position));
     }
 
-    @Override public int getItemCount() {
-        return taskList.size();
+    public Task getTaskAt(int position) {
+        return getItem(position);
     }
 
-    static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView textDate, textLocation;
-        ImageView imageView;
+    class TaskViewHolder extends RecyclerView.ViewHolder {
+        TextView addressView;
 
-        public TaskViewHolder(@NonNull View itemView) {
+        TaskViewHolder(@NonNull View itemView) {
             super(itemView);
-            textDate = itemView.findViewById(R.id.textDate);
-            textLocation = itemView.findViewById(R.id.textLocation);
-            imageView = itemView.findViewById(R.id.imageViewPreview);
+            addressView = itemView.findViewById(R.id.taskAddressTextView);
+        }
+
+        void bind(Task task) {
+//            addressView.setText(task.address != null ? task.address : "Невідома адреса");
         }
     }
 }
