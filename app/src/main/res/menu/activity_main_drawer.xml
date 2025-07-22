@@ -5,6 +5,14 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_map"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="@string/menu_map" />
+        <item
+            android:id="@+id/nav_tasklist"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="@string/menu_tasklist" />
+        <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_menu_camera"
             android:title="@string/menu_home" />
@@ -16,13 +24,5 @@
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/menu_slideshow" />
-        <item
-            android:id="@+id/nav_tasklist"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="@string/menu_tasklist" />
-        <item
-            android:id="@+id/nav_map"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="@string/menu_map" />
     </group>
 </menu>
