@@ -146,7 +146,7 @@ public class AddTaskFragment extends Fragment {
 //                        imageBefore.setImageBitmap(BitmapFactory.decodeFile(photoPath));
 
                         Glide.with(requireContext())
-                            .load(new File(photoPath))
+                            .load(Uri.fromFile(new File(photoPath)))
 //                                    .placeholder(R.drawable.placeholder)
 //                                    .error(R.drawable.error)
                             .into(imageBefore);

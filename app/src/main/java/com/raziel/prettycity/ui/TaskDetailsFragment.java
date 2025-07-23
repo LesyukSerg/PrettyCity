@@ -82,13 +82,12 @@ public class TaskDetailsFragment extends Fragment {
                         // Вивести зображення (якщо є)
                         if (currentTask.photoBeforePath != null) {
                             Glide.with(requireContext())
-                                    .load(new File(task.photoBeforePath))
+                                    .load(Uri.fromFile(new File(currentTask.photoBeforePath)))
 //                                    .placeholder(R.drawable.placeholder)
 //                                    .error(R.drawable.error)
                                     .into(imageBefore);
 
                             imageBefore.setVisibility(View.VISIBLE);
-//                            imageBefore.setImageURI(Uri.parse(currentTask.photoBeforePath));
 
                             imageBefore.setOnClickListener(v -> {
                                 Bundle bundle = new Bundle();
@@ -98,10 +97,10 @@ public class TaskDetailsFragment extends Fragment {
                             });
                         }
 
-                        if ("completed".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
+                        if ("completed".equalsIgnoreCase(currentTask.status) && currentTask.photoAfterPath != null) {
 //                            imageAfter.setImageURI(Uri.parse(task.photoAfterPath));
                             Glide.with(requireContext())
-                                    .load(new File(currentTask.photoAfterPath))
+                                    .load(Uri.fromFile(new File(currentTask.photoAfterPath)))
 //                                    .placeholder(R.drawable.placeholder)
 //                                    .error(R.drawable.error)
                                     .into(imageAfter);

@@ -1,6 +1,7 @@
 package com.raziel.prettycity.ui;
 
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,7 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.raziel.prettycity.R;
+
+import java.io.File;
 
 public class FullscreenImageFragment extends Fragment {
 
@@ -29,8 +33,11 @@ public class FullscreenImageFragment extends Fragment {
         String imagePath = getArguments() != null ? getArguments().getString("image_path") : null;
 
         if (imagePath != null) {
-            imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath));
+            Glide.with(requireContext())
+                .load(Uri.fromFile(new File(imagePath)))
+                .into(imageView);
         }
+//        imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath));
 
         imageView.setOnClickListener(v -> requireActivity().onBackPressed());
     }
