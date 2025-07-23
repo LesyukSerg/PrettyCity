@@ -13,7 +13,7 @@ public class DatabaseClient {
         appDatabase = Room.databaseBuilder(
                 context.getApplicationContext(),
                 AppDatabase.class,
-                "TaskDB"
+                "PrettyCityDB"
         ).build();
     }
 
