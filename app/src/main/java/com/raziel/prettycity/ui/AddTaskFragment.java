@@ -17,6 +17,7 @@ import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.raziel.prettycity.R;
@@ -24,6 +25,7 @@ import com.raziel.prettycity.data.DatabaseClient;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.utils.Utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -141,7 +143,14 @@ public class AddTaskFragment extends Fragment {
                             dateTaken = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
                         }
                         editTextCreatedAt.setText(dateTaken);
-                        imageBefore.setImageBitmap(BitmapFactory.decodeFile(photoPath));
+//                        imageBefore.setImageBitmap(BitmapFactory.decodeFile(photoPath));
+
+                        Glide.with(requireContext())
+                            .load(new File(photoPath))
+//                                    .placeholder(R.drawable.placeholder)
+//                                    .error(R.drawable.error)
+                            .into(imageBefore);
+
                         buttonSaveTask.setEnabled(true);
 
                     } catch (Exception e) {

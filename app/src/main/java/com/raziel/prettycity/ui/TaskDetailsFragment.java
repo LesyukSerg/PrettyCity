@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -19,11 +20,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
 import com.raziel.prettycity.utils.Utils;
+
+import java.io.File;
 
 public class TaskDetailsFragment extends Fragment {
 
@@ -76,13 +80,32 @@ public class TaskDetailsFragment extends Fragment {
                         textCoordinates.setText("Lat: " + task.latitude + ", Lng: " + task.longitude);
 
                         // Вивести зображення (якщо є)
-                        if (task.photoBeforePath != null) {
-                            imageBefore.setImageURI(Uri.parse(task.photoBeforePath));
+                        if (currentTask.photoBeforePath != null) {
+                            Glide.with(requireContext())
+                                    .load(new File(task.photoBeforePath))
+//                                    .placeholder(R.drawable.placeholder)
+//                                    .error(R.drawable.error)
+                                    .into(imageBefore);
+
                             imageBefore.setVisibility(View.VISIBLE);
+//                            imageBefore.setImageURI(Uri.parse(currentTask.photoBeforePath));
+
+                            imageBefore.setOnClickListener(v -> {
+                                Bundle bundle = new Bundle();
+                                bundle.putString("image_path", currentTask.photoBeforePath);
+
+                                Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_fullscreenImageFragment, bundle);
+                            });
                         }
 
                         if ("completed".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
-                            imageAfter.setImageURI(Uri.parse(task.photoAfterPath));
+//                            imageAfter.setImageURI(Uri.parse(task.photoAfterPath));
+                            Glide.with(requireContext())
+                                    .load(new File(currentTask.photoAfterPath))
+//                                    .placeholder(R.drawable.placeholder)
+//                                    .error(R.drawable.error)
+                                    .into(imageAfter);
+
                             imageAfter.setVisibility(View.VISIBLE);
                         } else {
                             imageAfter.setVisibility(View.GONE);

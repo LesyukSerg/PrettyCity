@@ -44,11 +44,22 @@
         android:name="com.raziel.prettycity.ui.TaskDetailsFragment"
         android:label="Detail Task"
         tools:layout="@layout/fragment_task_details"
-        app:destination="@id/nav_map" />
+        app:destination="@id/nav_map">
+        <action
+            android:id="@+id/action_taskDetailsFragment_to_fullscreenImageFragment"
+            app:destination="@id/fullscreenImageFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_tasklist"
         android:name="com.raziel.prettycity.ui.TaskListFragment"
         android:label="@string/menu_tasklist"
         tools:layout="@layout/fragment_task_list" />
+
+    <fragment
+        android:id="@+id/fullscreenImageFragment"
+        android:name="com.raziel.prettycity.ui.FullscreenImageFragment"
+        android:label="Image"
+        tools:layout="@layout/fragment_fullscreen_image" />
+
 </navigation>
