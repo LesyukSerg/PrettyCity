@@ -1,21 +1,30 @@
 package com.raziel.prettycity.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
+import com.raziel.prettycity.utils.FileUtils;
 
 public class TaskDetailsFragment extends Fragment {
 
@@ -25,7 +34,13 @@ public class TaskDetailsFragment extends Fragment {
     private int taskId;
     private Task currentTask;
 
-    public TaskDetailsFragment() {}
+    private TextView textTitle, textStatus, textDescription, textCoordinates;
+    private ImageView imageBefore, imageAfter;
+    private Button buttonChangeStatus, buttonAddAfterImage;
+
+
+    public TaskDetailsFragment() {
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -35,43 +50,81 @@ public class TaskDetailsFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        editLatitude = view.findViewById(R.id.editLatitude);
-        editLongitude = view.findViewById(R.id.editLongitude);
-        editTitle = view.findViewById(R.id.editTitle);
-        editDescription = view.findViewById(R.id.editDescription);
-        editStatus = view.findViewById(R.id.editStatus);
-        buttonSave = view.findViewById(R.id.buttonSave);
+        TextView textTitle = view.findViewById(R.id.textTitle);
+        TextView textStatus = view.findViewById(R.id.textStatus);
+        TextView textDescription = view.findViewById(R.id.textDescription);
+        TextView textCoordinates = view.findViewById(R.id.textCoordinates);
+        ImageView imageBefore = view.findViewById(R.id.imageBefore);
+        ImageView imageAfter = view.findViewById(R.id.imageAfter);
+        Button buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
+        Button buttonAddAfterPhoto = view.findViewById(R.id.buttonAddAfterPhoto);
 
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
 
         if (getArguments() != null) {
             taskId = getArguments().getInt("taskId", -1);
             if (taskId != -1) {
-                taskDao.getById(taskId).observe(getViewLifecycleOwner(), new Observer<Task>() {
-                    @Override
-                    public void onChanged(Task task) {
-                        if (task != null) {
-                            currentTask = task;
-                            editLatitude.setText(String.valueOf(task.latitude));
-                            editLongitude.setText(String.valueOf(task.longitude));
-                            editTitle.setText(task.title);
-                            editDescription.setText(task.description);
-                            editStatus.setText(task.status);
+                taskDao.getById(taskId).observe(getViewLifecycleOwner(), task -> {
+                    if (task != null) {
+                        currentTask = task;
+
+                        // Встановлення заголовка Fragment-а
+                        requireActivity().setTitle(task.title);
+
+                        textTitle.setText(task.title);
+                        textStatus.setText("Status: " + task.status);
+                        textDescription.setText(task.description);
+                        textCoordinates.setText("Lat: " + task.latitude + ", Lng: " + task.longitude);
+
+                        // Вивести зображення (якщо є)
+                        if (task.photoBeforePath != null) {
+                            imageBefore.setImageURI(Uri.parse(task.photoBeforePath));
+                            imageBefore.setVisibility(View.VISIBLE);
                         }
+
+                        if ("completed".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
+                            imageAfter.setImageURI(Uri.parse(task.photoAfterPath));
+                            imageAfter.setVisibility(View.VISIBLE);
+                        } else {
+                            imageAfter.setVisibility(View.GONE);
+                        }
+
+                        // Кнопка оновлення статусу
+                        buttonUpdateStatus.setOnClickListener(v -> {
+                            currentTask.status = "completed";
+                            taskDao.update(currentTask);
+                            textStatus.setText("Status: " + currentTask.status);
+                        });
+
+                        // Кнопка додавання зображення після
+                        buttonAddAfterPhoto.setOnClickListener(v -> {
+                            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            afterPhotoPickerLauncher.launch(intent);
+                        });
                     }
                 });
             }
         }
-
-        buttonSave.setOnClickListener(v -> {
-            if (currentTask != null) {
-//                currentTask.setLatitude(Double.parseDouble(editLatitude.getText().toString()));
-//                currentTask.setLongitude(Double.parseDouble(editLongitude.getText().toString()));
-//                currentTask.setTitle(editTitle.getText().toString());
-//                currentTask.setDescription(editDescription.getText().toString());
-//                currentTask.setStatus(editStatus.getText().toString());
-                taskDao.update(currentTask);
-            }
-        });
     }
+
+    private final ActivityResultLauncher<Intent> afterPhotoPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == requireActivity().RESULT_OK && result.getData() != null) {
+                    Uri selectedImage = result.getData().getData();
+                    String path = FileUtils.getPath(requireContext(), selectedImage);
+                    if (path != null && currentTask != null) {
+                        currentTask.photoAfterPath = path;
+                        // зразу оновлюємо статус, якщо потрібно:
+                        currentTask.status = "completed";
+                        taskDao.update(currentTask);
+
+                        imageAfter.setImageURI(Uri.parse(path));
+                        imageAfter.setVisibility(View.VISIBLE);
+                        textStatus.setText("Status: " + currentTask.status);
+                    }
+                }
+            }
+    );
+
 }

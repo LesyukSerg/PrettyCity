@@ -40,6 +40,13 @@
         app:destination="@id/nav_map" />
 
     <fragment
+        android:id="@+id/taskDetailsFragment"
+        android:name="com.raziel.prettycity.ui.TaskDetailsFragment"
+        android:label="Detail Task"
+        tools:layout="@layout/fragment_task_details"
+        app:destination="@id/nav_map" />
+
+    <fragment
         android:id="@+id/nav_tasklist"
         android:name="com.raziel.prettycity.ui.TaskListFragment"
         android:label="@string/menu_tasklist"

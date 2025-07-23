@@ -17,8 +17,15 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     public static Double currentLat = null;
     public static Double currentLon = null;
 
+
+    private OnTaskClickListener listener;
+
     public TaskAdapter() {
         super(DIFF_CALLBACK);
+    }
+
+    public void setOnTaskClickListener(OnTaskClickListener listener) {
+        this.listener = listener;
     }
 
     static final DiffUtil.ItemCallback<Task> DIFF_CALLBACK = new DiffUtil.ItemCallback<Task>() {
@@ -44,6 +51,10 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         return getItem(position);
     }
 
+    public interface OnTaskClickListener {
+        void onTaskClick(Task task);
+    }
+
     class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView titleView, descriptionView, distanceView;
 
@@ -52,6 +63,12 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
             titleView = itemView.findViewById(R.id.taskTitleTextView);
             descriptionView = itemView.findViewById(R.id.taskDescriptionTextView);
             distanceView = itemView.findViewById(R.id.taskDistanceTextView);
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (listener != null && position != RecyclerView.NO_POSITION) {
+                    listener.onTaskClick(getItem(position));
+                }
+            });
         }
 
         void bind(Task task) {
