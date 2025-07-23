@@ -27,18 +27,18 @@
             android:scaleType="centerCrop"
             android:visibility="gone" />
 
-        <Button
-            android:id="@+id/buttonEditCoordinates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Edit Coordinates on Map" />
-
         <ImageView
             android:id="@+id/imageAfter"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonEditCoordinates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edit Coordinates on Map" />
 
         <TextView
             android:id="@+id/textDescription"
@@ -55,11 +55,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Mark as Completed" />
-
-        <Button
-            android:id="@+id/buttonAddAfterPhoto"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Add After Photo" />
     </LinearLayout>
 </ScrollView>

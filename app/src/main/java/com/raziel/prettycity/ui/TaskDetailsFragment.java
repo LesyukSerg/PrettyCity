@@ -32,37 +32,33 @@ import java.util.concurrent.Executors;
 
 public class TaskDetailsFragment extends Fragment {
 
-    private EditText editLatitude, editLongitude, editTitle, editDescription, editStatus;
-    private Button buttonSave;
-    private TaskDao taskDao;
-    private int taskId;
-    private Task currentTask;
-
     private TextView textTitle, textStatus, textDescription, textCoordinates;
     private ImageView imageBefore, imageAfter;
-    private Button buttonChangeStatus, buttonAddAfterImage;
+    private Button buttonUpdateStatus, buttonEditCoordinates;
 
+    private TaskDao taskDao;
+    private Task currentTask;
+    private int taskId;
 
     public TaskDetailsFragment() {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_task_details, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        TextView textTitle = view.findViewById(R.id.textTitle);
-        TextView textStatus = view.findViewById(R.id.textStatus);
-        TextView textDescription = view.findViewById(R.id.textDescription);
-        TextView textCoordinates = view.findViewById(R.id.textCoordinates);
-        ImageView imageBefore = view.findViewById(R.id.imageBefore);
-        ImageView imageAfter = view.findViewById(R.id.imageAfter);
-        Button buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
-        Button buttonAddAfterPhoto = view.findViewById(R.id.buttonAddAfterPhoto);
-        Button buttonEditCoordinates = view.findViewById(R.id.buttonEditCoordinates);
+        // Прив’язка до полів класу
+        textTitle = view.findViewById(R.id.textTitle);
+        textStatus = view.findViewById(R.id.textStatus);
+        textDescription = view.findViewById(R.id.textDescription);
+        textCoordinates = view.findViewById(R.id.textCoordinates);
+        imageBefore = view.findViewById(R.id.imageBefore);
+        imageAfter = view.findViewById(R.id.imageAfter);
+        buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
+        buttonEditCoordinates = view.findViewById(R.id.buttonEditCoordinates);
 
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
 
@@ -73,7 +69,6 @@ public class TaskDetailsFragment extends Fragment {
                     if (task != null) {
                         currentTask = task;
 
-                        // Встановлення заголовка Fragment-а
                         requireActivity().setTitle(task.title);
 
                         textTitle.setText(task.title);
@@ -81,62 +76,53 @@ public class TaskDetailsFragment extends Fragment {
                         textDescription.setText(task.description);
                         textCoordinates.setText("Lat: " + task.latitude + ", Lng: " + task.longitude);
 
-                        // Вивести зображення (якщо є)
-                        if (currentTask.photoBeforePath != null) {
+                        if (task.photoBeforePath != null) {
                             Glide.with(requireContext())
-                                    .load(Uri.fromFile(new File(currentTask.photoBeforePath)))
-//                                    .placeholder(R.drawable.placeholder)
-//                                    .error(R.drawable.error)
+                                    .load(Uri.fromFile(new File(task.photoBeforePath)))
                                     .into(imageBefore);
-
                             imageBefore.setVisibility(View.VISIBLE);
 
                             imageBefore.setOnClickListener(v -> {
                                 Bundle bundle = new Bundle();
-                                bundle.putString("image_path", currentTask.photoBeforePath);
-
+                                bundle.putString("image_path", task.photoBeforePath);
                                 Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_fullscreenImageFragment, bundle);
                             });
                         }
 
-                        if ("completed".equalsIgnoreCase(currentTask.status) && currentTask.photoAfterPath != null) {
-//                            imageAfter.setImageURI(Uri.parse(task.photoAfterPath));
+                        if ("done".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
                             Glide.with(requireContext())
-                                    .load(Uri.fromFile(new File(currentTask.photoAfterPath)))
-//                                    .placeholder(R.drawable.placeholder)
-//                                    .error(R.drawable.error)
+                                    .load(Uri.fromFile(new File(task.photoAfterPath)))
                                     .into(imageAfter);
-
                             imageAfter.setVisibility(View.VISIBLE);
+
+                            imageAfter.setOnClickListener(v -> {
+                                Bundle bundle = new Bundle();
+                                bundle.putString("image_path", task.photoAfterPath);
+                                Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_fullscreenImageFragment, bundle);
+                            });
+
                         } else {
                             imageAfter.setVisibility(View.GONE);
                         }
 
-                        // Кнопка оновлення статусу
                         buttonUpdateStatus.setOnClickListener(v -> {
-                            currentTask.status = "completed";
-                            taskDao.update(currentTask);
-                            textStatus.setText("Status: " + currentTask.status);
-                        });
-
-                        // Кнопка додавання зображення після
-                        buttonAddAfterPhoto.setOnClickListener(v -> {
                             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                             afterPhotoPickerLauncher.launch(intent);
                         });
                     }
                 });
 
+                // Слухаємо результат від фрагмента зміни координат
                 getParentFragmentManager().setFragmentResultListener("location_result", this, (key, bundle) -> {
                     String newLat = bundle.getString("latitude");
                     String newLng = bundle.getString("longitude");
 
+                    textCoordinates.setText("Lat: " + newLat + ", Lng: " + newLng);
                     currentTask.latitude = Double.parseDouble(newLat);
                     currentTask.longitude = Double.parseDouble(newLng);
 
                     Executors.newSingleThreadExecutor().execute(() -> {
                         taskDao.update(currentTask);
-                        textCoordinates.setText("Lat: " + newLat + ", Lng: " + newLng);
                     });
                 });
 
@@ -158,16 +144,23 @@ public class TaskDetailsFragment extends Fragment {
                     String path = Utils.getPath(requireContext(), selectedImage);
                     if (path != null && currentTask != null) {
                         currentTask.photoAfterPath = path;
-                        // зразу оновлюємо статус, якщо потрібно:
-                        currentTask.status = "completed";
-                        taskDao.update(currentTask);
+                        currentTask.status = "done";
 
-                        imageAfter.setImageURI(Uri.parse(path));
+                        Executors.newSingleThreadExecutor().execute(() -> {
+                            taskDao.update(currentTask);
+                        });
+
+                        Glide.with(requireContext())
+                                .load(Uri.fromFile(new File(path)))
+                                .into(imageAfter);
+
+                        buttonUpdateStatus.setText(R.string.complete);
+                        buttonUpdateStatus.setVisibility(View.GONE);
+                        buttonEditCoordinates.setVisibility(View.GONE);
                         imageAfter.setVisibility(View.VISIBLE);
                         textStatus.setText("Status: " + currentTask.status);
                     }
                 }
             }
     );
-
 }

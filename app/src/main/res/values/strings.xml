@@ -15,11 +15,12 @@
     <string name="menu_slideshow">Slideshow</string>
     <string name="menu_tasklist">Tasklist</string>
     <string name="menu_map">Map</string>
+    <string name="complete">Complete</string>
 
     <string-array name="status_array">
-        <item>planned</item>
-        <item>in_progress</item>
-        <item>done</item>
+        <item>Planned</item>
+        <item>in progress</item>
+        <item>Done</item>
     </string-array>
 
     <string-array name="priority_array">

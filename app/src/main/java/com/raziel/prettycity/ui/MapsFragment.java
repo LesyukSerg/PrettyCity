@@ -97,7 +97,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
                     BitmapDescriptor icon;
                     if ("done".equalsIgnoreCase(task.status)) {
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
                     } else {
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
                     }
