@@ -12,7 +12,6 @@ import android.view.*;
 import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
@@ -23,7 +22,7 @@ import com.google.android.gms.location.LocationServices;
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.DatabaseClient;
 import com.raziel.prettycity.data.Task;
-import com.raziel.prettycity.utils.FileUtils;
+import com.raziel.prettycity.utils.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,11 +76,11 @@ public class AddTaskFragment extends Fragment {
             String lonStr = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
             String lonRef = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
 
-            double lat = FileUtils.convertToDegree(latStr);
-            if (latRef.equals("S")) lat *= -1;
+            double lat = Utils.convertToDegree(latStr);
+            if (latRef != null && latRef.equals("S")) lat *= -1;
 
-            double lon = FileUtils.convertToDegree(lonStr);
-            if (lonRef.equals("W")) lon *= -1;
+            double lon = Utils.convertToDegree(lonStr);
+            if (lonRef != null && lonRef.equals("W")) lon *= -1;
 
             Log.d("COORD", "EXIF coords: " + lat + ", " + lon);
             callback.onCoordinatesReady(lat, lon);
@@ -123,7 +122,7 @@ public class AddTaskFragment extends Fragment {
             result -> {
                 if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                     Uri selectedImage = result.getData().getData();
-                    photoPath = FileUtils.getPath(requireContext(), selectedImage);
+                    photoPath = Utils.getPath(requireContext(), selectedImage);
 
                     getCoordinatesFromExifOrLocation(selectedImage, new LocationCallback() {
                         @Override

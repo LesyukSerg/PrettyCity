@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-public class FileUtils {
+public class Utils {
     public static String getPath(Context context, Uri uri) {
         String[] projection = { MediaStore.Images.Media.DATA };
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
@@ -15,10 +15,13 @@ public class FileUtils {
         cursor.moveToFirst();
         String path = cursor.getString(column_index);
         cursor.close();
+
         return path;
     }
 
     public static double convertToDegree(String stringDMS) {
+        if (stringDMS == null) return 0.0;
+
         String[] DMS = stringDMS.split(",", 3);
 
         String[] stringD = DMS[0].split("/", 2);

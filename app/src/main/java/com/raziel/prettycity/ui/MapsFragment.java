@@ -5,6 +5,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -13,16 +19,14 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -37,9 +41,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private TaskDao taskDao;
-
     private FusedLocationProviderClient fusedLocationClient;
-
 
     public MapsFragment() {}
 
@@ -63,16 +65,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
 
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getChildFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-
         FloatingActionButton fab = view.findViewById(R.id.fab_add);
         fab.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_mapsFragment_to_addTaskFragment);
         });
+
+        ImageButton btnMyLocation = view.findViewById(R.id.btn_my_location);
+        btnMyLocation.setOnClickListener(v -> centerMapOnMyLocation());
     }
 
     @Override
@@ -96,10 +95,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 mMap.clear();
                 for (Task task : tasks) {
                     LatLng position = new LatLng(task.getLatitude(), task.getLongitude());
+
+                    BitmapDescriptor icon;
+                    if ("done".equalsIgnoreCase(task.status)) {
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+                    } else {
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+                    }
+
                     mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(task.title)
-                            .snippet(task.description));
+                            .snippet(task.description)
+                            .icon(icon));
                 }
 
                 if (!tasks.isEmpty()) {
@@ -119,8 +127,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     .addOnSuccessListener(location -> {
                         if (location != null) {
                             LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, 15f));
-                            mMap.addMarker(new MarkerOptions().position(myLatLng).title("Ви тут"));
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(myLatLng)
+                                    .title("Ви тут"));
 
                             saveLastKnownLocation(location.getLatitude(), location.getLongitude());
                         }
@@ -132,6 +141,21 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    private void centerMapOnMyLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null) {
+                            LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, 15f));
+                        } else {
+                            Toast.makeText(requireContext(), "Не вдалося отримати локацію", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
+
     private void saveLastKnownLocation(double lat, double lng) {
         requireContext().getSharedPreferences("map_prefs", Context.MODE_PRIVATE)
                 .edit()
@@ -139,5 +163,4 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 .putFloat("last_lng", (float) lng)
                 .apply();
     }
-
 }

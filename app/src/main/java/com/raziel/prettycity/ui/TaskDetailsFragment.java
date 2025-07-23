@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -24,7 +23,7 @@ import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
-import com.raziel.prettycity.utils.FileUtils;
+import com.raziel.prettycity.utils.Utils;
 
 public class TaskDetailsFragment extends Fragment {
 
@@ -112,7 +111,7 @@ public class TaskDetailsFragment extends Fragment {
             result -> {
                 if (result.getResultCode() == requireActivity().RESULT_OK && result.getData() != null) {
                     Uri selectedImage = result.getData().getData();
-                    String path = FileUtils.getPath(requireContext(), selectedImage);
+                    String path = Utils.getPath(requireContext(), selectedImage);
                     if (path != null && currentTask != null) {
                         currentTask.photoAfterPath = path;
                         // зразу оновлюємо статус, якщо потрібно:
