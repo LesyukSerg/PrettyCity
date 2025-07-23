@@ -1,15 +1,20 @@
 package com.raziel.prettycity.ui;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
@@ -31,6 +36,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 public class AddTaskFragment extends Fragment {
     private FusedLocationProviderClient fusedLocationClient;
@@ -41,6 +47,7 @@ public class AddTaskFragment extends Fragment {
     private TextView textCoordinates;
     private Spinner spinnerStatus, spinnerPriority;
 
+    private Uri photoUri;
     private String photoPath;
     private double latitude;
     private double longitude;
@@ -126,6 +133,12 @@ public class AddTaskFragment extends Fragment {
                     Uri selectedImage = result.getData().getData();
                     photoPath = Utils.getPath(requireContext(), selectedImage);
 
+                    Glide.with(requireContext())
+                            .load(Uri.fromFile(new File(photoPath)))
+//                                    .placeholder(R.drawable.placeholder)
+//                                    .error(R.drawable.error)
+                            .into(imageBefore);
+
                     getCoordinatesFromExifOrLocation(selectedImage, new LocationCallback() {
                         @Override
                         public void onCoordinatesReady(double lat, double lon) {
@@ -145,11 +158,45 @@ public class AddTaskFragment extends Fragment {
                         editTextCreatedAt.setText(dateTaken);
 //                        imageBefore.setImageBitmap(BitmapFactory.decodeFile(photoPath));
 
-                        Glide.with(requireContext())
+                        buttonSaveTask.setEnabled(true);
+
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && photoUri != null) {
+                    photoPath = Utils.getPath(requireContext(), photoUri);
+
+                    Glide.with(requireContext())
                             .load(Uri.fromFile(new File(photoPath)))
 //                                    .placeholder(R.drawable.placeholder)
 //                                    .error(R.drawable.error)
                             .into(imageBefore);
+
+                    getCoordinatesFromExifOrLocation(photoUri, new LocationCallback() {
+                        @Override
+                        public void onCoordinatesReady(double lat, double lon) {
+                            latitude = lat;
+                            longitude = lon;
+                            textCoordinates.setText("Lat: " + latitude + ", Lon: " + longitude);
+                        }
+                    });
+
+                    try {
+                        InputStream inputStream = requireContext().getContentResolver().openInputStream(photoUri);
+                        ExifInterface exif = new ExifInterface(inputStream);
+                        dateTaken = exif.getAttribute(ExifInterface.TAG_DATETIME);
+                        if (dateTaken == null) {
+                            dateTaken = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                        }
+                        editTextCreatedAt.setText(dateTaken);
+//                        imageBefore.setImageBitmap(BitmapFactory.decodeFile(photoPath));
 
                         buttonSaveTask.setEnabled(true);
 
@@ -160,9 +207,36 @@ public class AddTaskFragment extends Fragment {
             }
     );
 
+    private void takePhoto() {
+        String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault())
+                .format(new Date());
+        ContentValues values = new ContentValues();
+        String filename = "IMG-after-" + timestamp + ".jpg";
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/PrettyCity");
+
+        ContentResolver resolver = requireContext().getContentResolver();
+        photoUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        cameraLauncher.launch(takePictureIntent);
+    }
+
     private void selectPhoto() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        photoPickerLauncher.launch(intent);
+        String[] options = {"Зробити фото", "Вибрати з галереї"};
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Додати фото")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        takePhoto();
+                    } else {
+                        Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        photoPickerLauncher.launch(pickIntent);
+                    }
+                })
+                .show();
     }
 
     private void saveTask() {

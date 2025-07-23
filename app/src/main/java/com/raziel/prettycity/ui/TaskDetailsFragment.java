@@ -1,16 +1,25 @@
 package com.raziel.prettycity.ui;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +47,7 @@ public class TaskDetailsFragment extends Fragment {
 
     private TaskDao taskDao;
     private Task currentTask;
+    private Uri photoUri;
     private int taskId;
 
     public TaskDetailsFragment() {
@@ -106,8 +116,18 @@ public class TaskDetailsFragment extends Fragment {
                         }
 
                         buttonUpdateStatus.setOnClickListener(v -> {
-                            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            afterPhotoPickerLauncher.launch(intent);
+                            String[] options = {"Зробити фото", "Вибрати з галереї"};
+                            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                                    .setTitle("Додати фото")
+                                    .setItems(options, (dialog, which) -> {
+                                        if (which == 0) {
+                                            takePhoto();
+                                        } else {
+                                            Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                            afterPhotoPickerLauncher.launch(pickIntent);
+                                        }
+                                    })
+                                    .show();
                         });
                     }
                 });
@@ -135,6 +155,58 @@ public class TaskDetailsFragment extends Fragment {
             }
         }
     }
+
+    private void takePhoto() {
+        String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault())
+                .format(new Date());
+        ContentValues values = new ContentValues();
+        String filename = "IMG-after-" + timestamp + ".jpg";
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/PrettyCity");
+
+        ContentResolver resolver = requireContext().getContentResolver();
+        photoUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        cameraLauncher.launch(takePictureIntent);
+    }
+
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && photoUri != null) {
+                    if (currentTask != null) {
+                        // Зберегти URI як шлях (або можна перетворити в абсолютний шлях, якщо потрібно)
+                        String realPath = getRealPathFromURI(photoUri);
+                        currentTask.photoAfterPath = realPath;
+                        currentTask.status = "done";
+
+                        Executors.newSingleThreadExecutor().execute(() -> {
+                            taskDao.update(currentTask);
+                        });
+
+                        imageAfter.setImageURI(Uri.fromFile(new File(realPath)));
+                        imageAfter.setVisibility(View.VISIBLE);
+                        textStatus.setText("Status: " + currentTask.status);
+                    }
+                }
+            }
+    );
+
+    private String getRealPathFromURI(Uri contentUri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        try (Cursor cursor = requireContext().getContentResolver().query(contentUri, projection, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                return cursor.getString(columnIndex);
+            }
+        }
+        return null;
+    }
+
 
     private final ActivityResultLauncher<Intent> afterPhotoPickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
