@@ -52,6 +52,13 @@ public class TaskListFragment extends Fragment {
         taskDao = AppDatabase.getDatabase(getContext()).taskDao();
         taskDao.getAll().observe(getViewLifecycleOwner(), tasks -> adapter.submitList(tasks));
 
+        adapter.setOnTaskClickListener(task -> {
+            Bundle bundle = new Bundle();
+            bundle.putInt("taskId", task.id);
+            Navigation.findNavController(view).navigate(R.id.taskDetailsFragment, bundle);
+        });
+
+
         // Swipe to delete
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
