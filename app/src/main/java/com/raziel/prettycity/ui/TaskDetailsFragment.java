@@ -28,6 +28,7 @@ import com.raziel.prettycity.data.TaskDao;
 import com.raziel.prettycity.utils.Utils;
 
 import java.io.File;
+import java.util.concurrent.Executors;
 
 public class TaskDetailsFragment extends Fragment {
 
@@ -61,6 +62,7 @@ public class TaskDetailsFragment extends Fragment {
         ImageView imageAfter = view.findViewById(R.id.imageAfter);
         Button buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
         Button buttonAddAfterPhoto = view.findViewById(R.id.buttonAddAfterPhoto);
+        Button buttonEditCoordinates = view.findViewById(R.id.buttonEditCoordinates);
 
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
 
@@ -123,6 +125,26 @@ public class TaskDetailsFragment extends Fragment {
                             afterPhotoPickerLauncher.launch(intent);
                         });
                     }
+                });
+
+                getParentFragmentManager().setFragmentResultListener("location_result", this, (key, bundle) -> {
+                    String newLat = bundle.getString("latitude");
+                    String newLng = bundle.getString("longitude");
+
+                    currentTask.latitude = Double.parseDouble(newLat);
+                    currentTask.longitude = Double.parseDouble(newLng);
+
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        taskDao.update(currentTask);
+                        textCoordinates.setText("Lat: " + newLat + ", Lng: " + newLng);
+                    });
+                });
+
+                buttonEditCoordinates.setOnClickListener(v -> {
+                    Bundle args = new Bundle();
+                    args.putString("latitude", String.valueOf(currentTask.latitude));
+                    args.putString("longitude", String.valueOf(currentTask.longitude));
+                    Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_editLocationFragment, args);
                 });
             }
         }
