@@ -12,6 +12,9 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
@@ -31,6 +34,15 @@ public class TaskListFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        FusedLocationProviderClient locationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        locationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location != null) {
+                TaskAdapter.currentLat = location.getLatitude();
+                TaskAdapter.currentLon = location.getLongitude();
+                adapter.notifyDataSetChanged(); // оновити відстань
+            }
+        });
 
         RecyclerView recyclerView = view.findViewById(R.id.taskRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

@@ -1,5 +1,6 @@
 package com.raziel.prettycity.ui;
 
+import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,9 @@ import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.Task;
 
 public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
+
+    public static Double currentLat = null;
+    public static Double currentLon = null;
 
     public TaskAdapter() {
         super(DIFF_CALLBACK);
@@ -41,15 +45,27 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     }
 
     class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView addressView;
+        TextView titleView, descriptionView, distanceView;
 
         TaskViewHolder(@NonNull View itemView) {
             super(itemView);
-            addressView = itemView.findViewById(R.id.taskAddressTextView);
+            titleView = itemView.findViewById(R.id.taskTitleTextView);
+            descriptionView = itemView.findViewById(R.id.taskDescriptionTextView);
+            distanceView = itemView.findViewById(R.id.taskDistanceTextView);
         }
 
         void bind(Task task) {
-//            addressView.setText(task.address != null ? task.address : "Невідома адреса");
+            titleView.setText(task.title != null ? task.title : "Без назви");
+            descriptionView.setText(task.description != null ? task.description : "");
+
+            if (TaskAdapter.currentLat != null && TaskAdapter.currentLon != null && task.latitude != 0 && task.longitude != 0) {
+                float[] result = new float[1];
+                Location.distanceBetween(TaskAdapter.currentLat, TaskAdapter.currentLon, task.latitude, task.longitude, result);
+                int distance = Math.round(result[0]);
+                distanceView.setText(distance + " м");
+            } else {
+                distanceView.setText("—");
+            }
         }
     }
 }
