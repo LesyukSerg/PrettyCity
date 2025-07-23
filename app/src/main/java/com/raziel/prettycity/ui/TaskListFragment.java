@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
@@ -41,6 +42,11 @@ public class TaskListFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        FloatingActionButton fab = view.findViewById(R.id.fab_add2);
+        fab.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_mapsFragment_to_addTaskFragment);
+        });
 
         FusedLocationProviderClient locationClient = LocationServices.getFusedLocationProviderClient(requireContext());
         locationClient.getLastLocation().addOnSuccessListener(location -> {
@@ -64,7 +70,6 @@ public class TaskListFragment extends Fragment {
             bundle.putInt("taskId", task.id);
             Navigation.findNavController(view).navigate(R.id.taskDetailsFragment, bundle);
         });
-
 
         // Swipe to delete
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {

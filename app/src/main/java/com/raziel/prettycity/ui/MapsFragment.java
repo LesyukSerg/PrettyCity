@@ -70,8 +70,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             Navigation.findNavController(v).navigate(R.id.action_mapsFragment_to_addTaskFragment);
         });
 
-        ImageButton btnMyLocation = view.findViewById(R.id.btn_my_location);
-        btnMyLocation.setOnClickListener(v -> centerMapOnMyLocation());
+        centerMapOnMyLocation();
     }
 
     @Override
@@ -105,14 +104,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
                     mMap.addMarker(new MarkerOptions()
                             .position(position)
-                            .title(task.title)
+                            .title(task.id + ". " + task.title)
                             .snippet(task.description)
                             .icon(icon));
-                }
-
-                if (!tasks.isEmpty()) {
-                    LatLng first = new LatLng(tasks.get(0).getLatitude(), tasks.get(0).getLongitude());
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(first, 14f));
                 }
             }
         });

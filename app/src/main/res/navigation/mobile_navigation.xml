@@ -15,22 +15,14 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="com.raziel.prettycity.ui.home.HomeFragment"
-        android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
-
-    <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.raziel.prettycity.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
-
-    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.raziel.prettycity.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_tasklist"
+        android:name="com.raziel.prettycity.ui.TaskListFragment"
+        android:label="@string/menu_tasklist"
+        tools:layout="@layout/fragment_task_list">
+        <action
+            android:id="@+id/action_mapsFragment_to_addTaskFragment"
+            app:destination="@id/addTaskFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/addTaskFragment"
@@ -51,15 +43,31 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_tasklist"
-        android:name="com.raziel.prettycity.ui.TaskListFragment"
-        android:label="@string/menu_tasklist"
-        tools:layout="@layout/fragment_task_list" />
-
-    <fragment
         android:id="@+id/fullscreenImageFragment"
         android:name="com.raziel.prettycity.ui.FullscreenImageFragment"
         android:label="Image"
         tools:layout="@layout/fragment_fullscreen_image" />
+
+
+
+
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.raziel.prettycity.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_gallery"
+        android:name="com.raziel.prettycity.ui.gallery.GalleryFragment"
+        android:label="@string/menu_gallery"
+        tools:layout="@layout/fragment_gallery" />
+
+    <fragment
+        android:id="@+id/nav_slideshow"
+        android:name="com.raziel.prettycity.ui.slideshow.SlideshowFragment"
+        android:label="@string/menu_slideshow"
+        tools:layout="@layout/fragment_slideshow" />
 
 </navigation>
