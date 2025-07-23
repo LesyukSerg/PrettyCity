@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_mapsFragment_to_addTaskFragment"
             app:destination="@id/addTaskFragment" />
+        <action
+            android:id="@+id/action_mapsFragment_to_taskDetailsFragment"
+            app:destination="@id/taskDetailsFragment" />
     </fragment>
 
     <fragment
@@ -36,6 +39,7 @@
         android:name="com.raziel.prettycity.ui.TaskDetailsFragment"
         android:label="Detail Task"
         tools:layout="@layout/fragment_task_details">
+        <argument android:name="taskId" app:argType="integer" />
         <action
             android:id="@+id/action_taskDetailsFragment_to_fullscreenImageFragment"
             app:destination="@id/fullscreenImageFragment" />

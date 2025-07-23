@@ -108,6 +108,22 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             .snippet(task.description)
                             .icon(icon));
                 }
+
+                mMap.setOnInfoWindowClickListener(marker -> {
+                    String title = marker.getTitle(); // Наприклад: "3. Обрізка кущів"
+                    if (title != null && title.contains(".")) {
+                        try {
+                            int taskId = Integer.parseInt(title.split("\\.")[0].trim());
+
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("taskId", taskId); // передаємо taskId
+
+                            Navigation.findNavController(requireView()).navigate(R.id.action_mapsFragment_to_taskDetailsFragment, bundle);
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(requireContext(), "Невірний ID задачі", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
         });
     }
