@@ -2,9 +2,15 @@ package com.raziel.prettycity.ui;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -21,6 +27,7 @@ import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
 import android.view.View;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class TaskListFragment extends Fragment {
 
@@ -72,12 +79,47 @@ public class TaskListFragment extends Fragment {
                         .setTitle("Видалити задачу?")
                         .setMessage("Цю дію неможливо скасувати.")
                         .setPositiveButton("Так", (dialog, which) -> {
-                            taskDao.delete(task);
+                            Executors.newSingleThreadExecutor().execute(() -> {
+                                taskDao.delete(task);
+                            });
                         })
                         .setNegativeButton("Скасувати", (dialog, which) -> {
                             adapter.notifyItemChanged(viewHolder.getAdapterPosition());
                         })
                         .show();
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c,
+                                    @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY,
+                                    int actionState, boolean isCurrentlyActive) {
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+                View itemView = viewHolder.itemView;
+                Paint paint = new Paint();
+                paint.setColor(Color.RED);
+                RectF background = new RectF(
+                        itemView.getRight() + dX,
+                        itemView.getTop(),
+                        itemView.getRight(),
+                        itemView.getBottom()
+                );
+                c.drawRect(background, paint);
+
+                Drawable icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete_white);
+                if (icon != null) {
+                    int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+                    int iconTop = itemView.getTop() + iconMargin;
+                    int iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
+                    int iconRight = itemView.getRight() - iconMargin;
+                    int iconBottom = iconTop + icon.getIntrinsicHeight();
+
+                    icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+                    icon.draw(c);
+                }
             }
         }).attachToRecyclerView(recyclerView);
     }

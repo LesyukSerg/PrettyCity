@@ -40,6 +40,11 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.exifinterface)
 
+
+        implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
+
+
+
     implementation (libs.glide)
     annotationProcessor (libs.compiler)
 
