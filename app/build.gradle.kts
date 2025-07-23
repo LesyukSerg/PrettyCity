@@ -36,13 +36,16 @@ android {
 
 dependencies {
     // Google Maps & Location
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("androidx.exifinterface:exifinterface:1.3.2")
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    implementation(libs.exifinterface)
+
+    implementation (libs.glide)
+    annotationProcessor (libs.compiler)
 
     // Room (Java)
-    implementation("androidx.room:room-runtime:2.6.1")
-    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
 
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -51,7 +54,9 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
