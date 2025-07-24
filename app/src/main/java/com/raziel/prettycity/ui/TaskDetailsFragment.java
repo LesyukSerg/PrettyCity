@@ -87,6 +87,31 @@ public class TaskDetailsFragment extends Fragment {
                         textCoordinates.setText("Lat: " + task.latitude + ", Lng: " + task.longitude);
 
                         if (task.photoBeforePath != null) {
+                            File originalFile = new File(task.photoBeforePath);
+                            String prettyCityDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/PrettyCity";
+
+                            if (!task.photoBeforePath.contains("PrettyCity")) {
+                                // Переміщення файлу
+                                File targetDir = new File(prettyCityDir);
+                                if (!targetDir.exists()) {
+                                    targetDir.mkdirs(); // Створити папку, якщо її нема
+                                }
+
+                                String newFileName = "IMG-before-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(new Date()) + ".jpg";
+                                File newFile = new File(targetDir, newFileName);
+
+                                boolean success = Utils.copyFile(originalFile, newFile);
+                                if (success) {
+                                    task.photoBeforePath = newFile.getAbsolutePath();
+
+                                    Executors.newSingleThreadExecutor().execute(() -> {
+                                        taskDao.update(task);
+                                    });
+
+                                    originalFile.delete(); // (опційно) видалити старий
+                                }
+                            }
+
                             Glide.with(requireContext())
                                     .load(Uri.fromFile(new File(task.photoBeforePath)))
                                     .into(imageBefore);
@@ -100,6 +125,31 @@ public class TaskDetailsFragment extends Fragment {
                         }
 
                         if ("done".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
+                            File originalAfterFile = new File(task.photoAfterPath);
+                            String prettyCityDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/PrettyCity";
+
+                            if (!task.photoAfterPath.contains("PrettyCity")) {
+                                // Переміщення файлу
+                                File targetDir = new File(prettyCityDir);
+                                if (!targetDir.exists()) {
+                                    targetDir.mkdirs(); // Створити папку, якщо її ще нема
+                                }
+
+                                String newFileName = "IMG-after-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(new Date()) + ".jpg";
+                                File newFile = new File(targetDir, newFileName);
+
+                                boolean success = Utils.copyFile(originalAfterFile, newFile);
+                                if (success) {
+                                    task.photoAfterPath = newFile.getAbsolutePath();
+
+                                    Executors.newSingleThreadExecutor().execute(() -> {
+                                        taskDao.update(task);
+                                    });
+
+                                    originalAfterFile.delete(); // (опційно) видалити старий
+                                }
+                            }
+
                             Glide.with(requireContext())
                                     .load(Uri.fromFile(new File(task.photoAfterPath)))
                                     .into(imageAfter);

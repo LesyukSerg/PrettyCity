@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_margin="8dp"
+    android:layout_margin="4dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="4dp"
-        android:padding="12dp">
+        android:elevation="2dp"
+        android:padding="10dp">
 
         <LinearLayout
+            android:id="@+id/taskLayout"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@color/green_100"
+            >
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -25,6 +28,7 @@
                     android:layout_height="wrap_content"
                     android:text="Назва задачі"
                     android:textStyle="bold"
+                    android:paddingLeft="4dp"
                     android:textSize="18sp" />
 
                 <TextView
@@ -44,6 +48,13 @@
                 android:text="Опис задачі"
                 android:textSize="16sp"
                 android:layout_marginTop="4dp"/>
+            <TextView
+                android:id="@+id/taskStatusTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status: planed"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </FrameLayout>

@@ -5,6 +5,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class Utils {
     public static String getPath(Context context, Uri uri) {
         String[] projection = { MediaStore.Images.Media.DATA };
@@ -18,6 +22,22 @@ public class Utils {
 
         return path;
     }
+
+    public static boolean copyFile(File src, File dst) {
+        try (InputStream in = new java.io.FileInputStream(src);
+             java.io.OutputStream out = new java.io.FileOutputStream(dst)) {
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     public static double convertToDegree(String stringDMS) {
         if (stringDMS == null) return 0.0;

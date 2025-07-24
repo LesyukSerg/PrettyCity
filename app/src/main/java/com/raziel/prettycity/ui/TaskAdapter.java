@@ -4,8 +4,10 @@ import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,13 +58,17 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
     }
 
     class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView titleView, descriptionView, distanceView;
+        TextView titleView, descriptionView, distanceView, statusView;
+        LinearLayout taskLayout;
 
         TaskViewHolder(@NonNull View itemView) {
             super(itemView);
             titleView = itemView.findViewById(R.id.taskTitleTextView);
             descriptionView = itemView.findViewById(R.id.taskDescriptionTextView);
             distanceView = itemView.findViewById(R.id.taskDistanceTextView);
+            statusView = itemView.findViewById(R.id.taskStatusTextView);
+            taskLayout = itemView.findViewById(R.id.taskLayout);
+
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (listener != null && position != RecyclerView.NO_POSITION) {
@@ -74,6 +80,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         void bind(Task task) {
             titleView.setText(task.id + ". " + (task.title != null ? task.title : "Без назви"));
             descriptionView.setText(task.description != null ? task.description : "");
+            statusView.setText(task.status);
 
             if (TaskAdapter.currentLat != null && TaskAdapter.currentLon != null && task.latitude != 0 && task.longitude != 0) {
                 float[] result = new float[1];
@@ -83,6 +90,10 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
             } else {
                 distanceView.setText("—");
             }
+
+            int color = ContextCompat.getColor(itemView.getContext(),
+                    "done".equals(task.status) ? R.color.blue_100 : R.color.green_100);
+            taskLayout.setBackgroundColor(color);
         }
     }
 }
