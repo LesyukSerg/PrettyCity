@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/map_container"
@@ -12,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- FAB: Додати задачу -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add"
         android:layout_width="wrap_content"
@@ -20,4 +20,38 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/add_task"
         android:src="@android:drawable/ic_input_add" />
+
+    <!-- Панель кнопок для фільтрів -->
+    <LinearLayout
+        android:id="@+id/filter_panel"
+        android:orientation="horizontal"
+        android:layout_gravity="top|start"
+        android:layout_margin="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/btn_show_all"
+            style="@android:style/Widget.Holo.Light.ImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Всі"
+            android:src="@android:drawable/ic_menu_mapmode" />
+
+        <ImageButton
+            android:id="@+id/btn_show_planned"
+            style="@android:style/Widget.Holo.Light.ImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Planned"
+            android:src="@android:drawable/ic_menu_agenda" />
+
+        <ImageButton
+            android:id="@+id/btn_show_current_route"
+            style="@android:style/Widget.Holo.Light.ImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Поточна задача"
+            android:src="@android:drawable/ic_menu_directions" />
+    </LinearLayout>
 </FrameLayout>

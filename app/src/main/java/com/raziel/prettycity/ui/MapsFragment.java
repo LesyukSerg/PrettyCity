@@ -49,12 +49,48 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private TaskDao taskDao;
     private FusedLocationProviderClient fusedLocationClient;
 
+    private enum MarkerFilter {
+        ALL,
+        PLANNED_ONLY,
+        CURRENT_ROUTE
+    }
+
+    private MarkerFilter currentFilter = MarkerFilter.ALL;
+    private LatLng currentRouteTarget = null;
+    private List<Task> allTasks;
+
     public MapsFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
+
+        ImageButton btnShowAll = view.findViewById(R.id.btn_show_all);
+        ImageButton btnShowPlanned = view.findViewById(R.id.btn_show_planned);
+        ImageButton btnShowCurrentRoute = view.findViewById(R.id.btn_show_current_route);
+
+        btnShowAll.setOnClickListener(v -> {
+            currentFilter = MarkerFilter.ALL;
+            reloadMarkers();
+        });
+
+        btnShowPlanned.setOnClickListener(v -> {
+            currentFilter = MarkerFilter.PLANNED_ONLY;
+            reloadMarkers();
+        });
+
+        btnShowCurrentRoute.setOnClickListener(v -> {
+            currentFilter = MarkerFilter.CURRENT_ROUTE;
+            reloadMarkers();
+
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    LatLng start = new LatLng(location.getLatitude(), location.getLongitude());
+                    drawRoute(start, currentRouteTarget);
+                }
+            });
+        });
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
@@ -87,6 +123,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     LatLng start = new LatLng(location.getLatitude(), location.getLongitude());
                     LatLng end = new LatLng(targetLat, targetLng);
 
+                    currentFilter = MarkerFilter.CURRENT_ROUTE;
+                    reloadMarkers();
                     drawRoute(start, end);
                 }
             });
@@ -109,47 +147,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         enableMyLocation();
 
-        taskDao.getAll().observe(getViewLifecycleOwner(), new Observer<List<Task>>() {
-            @Override
-            public void onChanged(List<Task> tasks) {
-                mMap.clear();
-                for (Task task : tasks) {
-                    LatLng position = new LatLng(task.getLatitude(), task.getLongitude());
-
-                    BitmapDescriptor icon;
-                    if ("done".equalsIgnoreCase(task.status)) {
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
-                    } else {
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-                    }
-
-                    mMap.addMarker(new MarkerOptions()
-                            .position(position)
-                            .title(task.id + ". " + task.title)
-                            .snippet(task.completedAt)
-                            .icon(icon));
-                }
-
-                mMap.setOnInfoWindowClickListener(marker -> {
-                    String title = marker.getTitle(); // Наприклад: "3. Обрізка кущів"
-                    if (title != null && title.contains(".")) {
-                        try {
-                            int taskId = Integer.parseInt(title.split("\\.")[0].trim());
-
-                            Bundle bundle = new Bundle();
-                            bundle.putInt("taskId", taskId); // передаємо taskId
-
-                            Navigation.findNavController(requireView()).navigate(R.id.action_mapsFragment_to_taskDetailsFragment, bundle);
-                        } catch (NumberFormatException e) {
-                            Toast.makeText(requireContext(), "Невірний ID задачі", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            }
+        taskDao.getAll().observe(getViewLifecycleOwner(), tasks -> {
+            this.allTasks = tasks; // збережемо задачі локально
+            reloadMarkers();
         });
     }
 
     private void drawRoute(LatLng start, LatLng end) {
+        currentRouteTarget = end;
+
         GoogleDirection.withServerKey(getString(R.string.map_key))
                 .from(start)
                 .to(end)
@@ -169,8 +175,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                                         .width(10)
                                         .color(ContextCompat.getColor(requireContext(), R.color.teal_700)));
 
-                                mMap.addMarker(new MarkerOptions().position(start).title("Ваша позиція"));
-                                mMap.addMarker(new MarkerOptions().position(end).title("Задача"));
+//                                mMap.addMarker(new MarkerOptions().position(start).title("Ваша позиція"));
+//                                mMap.addMarker(new MarkerOptions().position(end).title("Задача"));
+
                                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(start, 14f));
                             } else {
                                 Toast.makeText(requireContext(), "Маршрут не знайдено", Toast.LENGTH_SHORT).show();
@@ -186,6 +193,57 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         t.printStackTrace();
                     }
                 });
+    }
+
+    private void reloadMarkers() {
+        if (mMap == null || allTasks == null) return;
+
+        mMap.clear();
+
+        for (Task task : allTasks) {
+            LatLng position = new LatLng(task.getLatitude(), task.getLongitude());
+
+            boolean shouldShow = false;
+            switch (currentFilter) {
+                case ALL:
+                    shouldShow = true;
+                    break;
+                case PLANNED_ONLY:
+                    shouldShow = "planned".equalsIgnoreCase(task.status);
+                    break;
+                case CURRENT_ROUTE:
+                    if (currentRouteTarget != null) {
+                        shouldShow = position.equals(currentRouteTarget);
+                    }
+                    break;
+            }
+
+            if (!shouldShow) continue;
+
+            BitmapDescriptor icon = "done".equalsIgnoreCase(task.status)
+                    ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                    : BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(task.id + ". " + task.title)
+                    .snippet(task.completedAt)
+                    .icon(icon));
+        }
+
+        mMap.setOnInfoWindowClickListener(marker -> {
+            String title = marker.getTitle();
+            if (title != null && title.contains(".")) {
+                try {
+                    int taskId = Integer.parseInt(title.split("\\.")[0].trim());
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("taskId", taskId);
+                    Navigation.findNavController(requireView()).navigate(R.id.action_mapsFragment_to_taskDetailsFragment, bundle);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(requireContext(), "Невірний ID задачі", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
 
