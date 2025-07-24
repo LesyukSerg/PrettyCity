@@ -105,7 +105,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(task.id + ". " + task.title)
-                            .snippet(task.description)
+                            .snippet(task.completedAt)
                             .icon(icon));
                 }
 

@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -15,7 +16,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
@@ -25,9 +26,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.raziel.prettycity.R;
@@ -41,7 +42,7 @@ import java.util.concurrent.Executors;
 
 public class TaskDetailsFragment extends Fragment {
 
-    private TextView textTitle, textStatus, textDescription, textCoordinates;
+    private TextView textTitle, textStatus, textDescription, textCoordinates, textCompletedAt;
     private ImageView imageBefore, imageAfter;
     private Button buttonUpdateStatus, buttonEditCoordinates;
 
@@ -60,13 +61,15 @@ public class TaskDetailsFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        // Прив’язка до полів класу
         textTitle = view.findViewById(R.id.textTitle);
         textStatus = view.findViewById(R.id.textStatus);
+        textCompletedAt = view.findViewById(R.id.textCompletedAt);
         textDescription = view.findViewById(R.id.textDescription);
         textCoordinates = view.findViewById(R.id.textCoordinates);
+
         imageBefore = view.findViewById(R.id.imageBefore);
         imageAfter = view.findViewById(R.id.imageAfter);
+
         buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
         buttonEditCoordinates = view.findViewById(R.id.buttonEditCoordinates);
 
@@ -91,7 +94,6 @@ public class TaskDetailsFragment extends Fragment {
                             String prettyCityDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/PrettyCity";
 
                             if (!task.photoBeforePath.contains("PrettyCity")) {
-                                // Переміщення файлу
                                 File targetDir = new File(prettyCityDir);
                                 if (!targetDir.exists()) {
                                     targetDir.mkdirs(); // Створити папку, якщо її нема
@@ -125,11 +127,13 @@ public class TaskDetailsFragment extends Fragment {
                         }
 
                         if ("done".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
+                            textCompletedAt.setText("Дата виконання: " + task.completedAt);
+                            textCompletedAt.setVisibility(View.VISIBLE);
+
                             File originalAfterFile = new File(task.photoAfterPath);
                             String prettyCityDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/PrettyCity";
 
                             if (!task.photoAfterPath.contains("PrettyCity")) {
-                                // Переміщення файлу
                                 File targetDir = new File(prettyCityDir);
                                 if (!targetDir.exists()) {
                                     targetDir.mkdirs(); // Створити папку, якщо її ще нема
@@ -223,22 +227,44 @@ public class TaskDetailsFragment extends Fragment {
         cameraLauncher.launch(takePictureIntent);
     }
 
-
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && photoUri != null) {
-                    if (currentTask != null) {
-                        // Зберегти URI як шлях (або можна перетворити в абсолютний шлях, якщо потрібно)
-                        String realPath = getRealPathFromURI(photoUri);
+                    String realPath = Utils.getPath(requireContext(), photoUri);
+
+                    if (realPath != null && currentTask != null) {
                         currentTask.photoAfterPath = realPath;
                         currentTask.status = "done";
+
+                        try {
+                            InputStream inputStream = requireContext().getContentResolver().openInputStream(photoUri);
+                            ExifInterface exif = new ExifInterface(inputStream);
+
+                            String dateDone = exif.getAttribute(ExifInterface.TAG_DATETIME);
+                            if (dateDone == null) {
+                                dateDone = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                            }
+
+                            textCompletedAt.setText("Дата виконання: " + dateDone);
+                            textCompletedAt.setVisibility(View.VISIBLE);
+                            currentTask.completedAt = dateDone.trim();
+
+                        } catch (Exception e) {
+                            Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                        }
 
                         Executors.newSingleThreadExecutor().execute(() -> {
                             taskDao.update(currentTask);
                         });
 
-                        imageAfter.setImageURI(Uri.fromFile(new File(realPath)));
+                        Glide.with(requireContext())
+                                .load(Uri.fromFile(new File(realPath)))
+                                .into(imageAfter);
+
+                        buttonUpdateStatus.setText(R.string.complete);
+                        buttonUpdateStatus.setVisibility(View.GONE);
+                        buttonEditCoordinates.setVisibility(View.GONE);
                         imageAfter.setVisibility(View.VISIBLE);
                         textStatus.setText("Status: " + currentTask.status);
                     }
@@ -246,34 +272,40 @@ public class TaskDetailsFragment extends Fragment {
             }
     );
 
-    private String getRealPathFromURI(Uri contentUri) {
-        String[] projection = { MediaStore.Images.Media.DATA };
-        try (Cursor cursor = requireContext().getContentResolver().query(contentUri, projection, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                return cursor.getString(columnIndex);
-            }
-        }
-        return null;
-    }
-
-
     private final ActivityResultLauncher<Intent> afterPhotoPickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == requireActivity().RESULT_OK && result.getData() != null) {
-                    Uri selectedImage = result.getData().getData();
-                    String path = Utils.getPath(requireContext(), selectedImage);
-                    if (path != null && currentTask != null) {
-                        currentTask.photoAfterPath = path;
+                    Uri photoUri = result.getData().getData();
+                    String realPath = Utils.getPath(requireContext(), photoUri);
+
+                    if (realPath != null && currentTask != null) {
+                        currentTask.photoAfterPath = realPath;
                         currentTask.status = "done";
+
+                        try {
+                            InputStream inputStream = requireContext().getContentResolver().openInputStream(photoUri);
+                            ExifInterface exif = new ExifInterface(inputStream);
+
+                            String dateDone = exif.getAttribute(ExifInterface.TAG_DATETIME);
+                            if (dateDone == null) {
+                                dateDone = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                            }
+
+                            textCompletedAt.setText("Дата виконання: " + dateDone);
+                            textCompletedAt.setVisibility(View.VISIBLE);
+                            currentTask.completedAt = dateDone.trim();
+
+                        } catch (Exception e) {
+                            Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                        }
 
                         Executors.newSingleThreadExecutor().execute(() -> {
                             taskDao.update(currentTask);
                         });
 
                         Glide.with(requireContext())
-                                .load(Uri.fromFile(new File(path)))
+                                .load(Uri.fromFile(new File(realPath)))
                                 .into(imageAfter);
 
                         buttonUpdateStatus.setText(R.string.complete);
