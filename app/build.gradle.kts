@@ -38,12 +38,11 @@ dependencies {
     // Google Maps & Location
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.google.direction.library)
+
     implementation(libs.exifinterface)
 
-
-        implementation ("it.xabaras.android:recyclerview-swipedecorator:1.4")
-
-
+    implementation (libs.recyclerview.swipedecorator)
 
     implementation (libs.glide)
     annotationProcessor (libs.compiler)
@@ -55,8 +54,10 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
+
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
+
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 

@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">Pretty City</string>
+    <string name="map_key">AIzaSyBGG70AxzomOdKVVyfpn-_2dwHbM71vHR8</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_title">Pretty City</string>
+    <string name="nav_header_subtitle">Make your city prettier</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="add_task">Add Task</string>

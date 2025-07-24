@@ -6,7 +6,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,7 +35,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.Executors;
 
 public class AddTaskFragment extends Fragment {
     private FusedLocationProviderClient fusedLocationClient;
@@ -273,7 +271,7 @@ public class AddTaskFragment extends Fragment {
 
             requireActivity().runOnUiThread(() -> {
                 Toast.makeText(requireContext(), "Задачу додано №" + task.id, Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigate(R.id.nav_map);
+                Navigation.findNavController(requireView()).navigate(R.id.mainMap);
             });
         }).start();
     }

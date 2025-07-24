@@ -3,36 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_map">
+    app:startDestination="@+id/mainMap">
 
     <fragment
-        android:id="@+id/nav_map"
+        android:id="@+id/mainMap"
         android:name="com.raziel.prettycity.ui.MapsFragment"
         android:label="Map">
+        <argument android:name="target_lat" />
+        <argument android:name="target_lon" />
         <action
             android:id="@+id/action_mapsFragment_to_addTaskFragment"
-            app:destination="@id/addTaskFragment" />
+            app:destination="@id/addTask" />
         <action
             android:id="@+id/action_mapsFragment_to_taskDetailsFragment"
             app:destination="@id/taskDetailsFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/nav_tasklist"
+        android:id="@+id/taskList"
         android:name="com.raziel.prettycity.ui.TaskListFragment"
         android:label="@string/menu_tasklist"
         tools:layout="@layout/fragment_task_list">
         <action
             android:id="@+id/action_mapsFragment_to_addTaskFragment"
-            app:destination="@id/addTaskFragment" />
+            app:destination="@id/addTask" />
     </fragment>
 
     <fragment
-        android:id="@+id/addTaskFragment"
+        android:id="@+id/addTask"
         android:name="com.raziel.prettycity.ui.AddTaskFragment"
         android:label="Add Task"
         tools:layout="@layout/fragment_add_task"
-        app:destination="@id/nav_map" />
+        app:destination="@id/mainMap" />
 
     <fragment
         android:id="@+id/taskDetailsFragment"
@@ -42,20 +44,23 @@
         <argument android:name="taskId" app:argType="integer" />
         <action
             android:id="@+id/action_taskDetailsFragment_to_fullscreenImageFragment"
-            app:destination="@id/fullscreenImageFragment" />
+            app:destination="@id/fullscreenImage" />
         <action
             android:id="@+id/action_taskDetailsFragment_to_editLocationFragment"
-            app:destination="@id/editLocationFragment" />
+            app:destination="@id/editLocation" />
+        <action
+            android:id="@+id/action_taskDetailsFragment_to_mapsFragment"
+            app:destination="@id/mainMap" />
     </fragment>
 
     <fragment
-        android:id="@+id/fullscreenImageFragment"
+        android:id="@+id/fullscreenImage"
         android:name="com.raziel.prettycity.ui.FullscreenImageFragment"
         android:label="Image"
         tools:layout="@layout/fragment_fullscreen_image" />
 
     <fragment
-        android:id="@+id/editLocationFragment"
+        android:id="@+id/editLocation"
         android:name="com.raziel.prettycity.ui.EditLocationFragment"
         android:label="Edit Location">
         <argument android:name="latitude" />

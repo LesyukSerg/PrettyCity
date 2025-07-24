@@ -19,6 +19,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Route; // <-- ВАЖЛИВО: цей імпорт
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,6 +34,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
@@ -71,6 +77,21 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         });
 
         centerMapOnMyLocation();
+
+        if (getArguments() != null && getArguments().containsKey("target_lat") && getArguments().containsKey("target_lon")) {
+            double targetLat = Double.parseDouble(getArguments().getString("target_lat"));
+            double targetLng = Double.parseDouble(getArguments().getString("target_lon"));
+
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    LatLng start = new LatLng(location.getLatitude(), location.getLongitude());
+                    LatLng end = new LatLng(targetLat, targetLng);
+
+                    drawRoute(start, end);
+                }
+            });
+        }
+
     }
 
     @Override
@@ -128,22 +149,62 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
+    private void drawRoute(LatLng start, LatLng end) {
+        GoogleDirection.withServerKey(getString(R.string.map_key))
+                .from(start)
+                .to(end)
+                .transportMode(TransportMode.WALKING)
+                .execute(new DirectionCallback() {
+                    @Override
+                    public void onDirectionSuccess(Direction direction) {
+                        if (direction.isOK()) {
+                            List<Route> routeList = direction.getRouteList();
+                            if (!routeList.isEmpty()) {
+                                List<LatLng> directionPositionList = routeList.get(0)
+                                        .getLegList().get(0)
+                                        .getDirectionPoint();
+
+                                mMap.addPolyline(new PolylineOptions()
+                                        .addAll(directionPositionList)
+                                        .width(10)
+                                        .color(ContextCompat.getColor(requireContext(), R.color.teal_700)));
+
+                                mMap.addMarker(new MarkerOptions().position(start).title("Ваша позиція"));
+                                mMap.addMarker(new MarkerOptions().position(end).title("Задача"));
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(start, 14f));
+                            } else {
+                                Toast.makeText(requireContext(), "Маршрут не знайдено", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Маршрут не знайдено (відповідь від Google не OK)", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onDirectionFailure(Throwable t) {
+                        Toast.makeText(requireContext(), "Помилка побудови маршруту", Toast.LENGTH_SHORT).show();
+                        t.printStackTrace();
+                    }
+                });
+    }
+
+
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
 
-            fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(location -> {
-                        if (location != null) {
-                            LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(myLatLng)
-                                    .title("Ви тут"));
-
-                            saveLastKnownLocation(location.getLatitude(), location.getLongitude());
-                        }
-                    });
+//            fusedLocationClient.getLastLocation()
+//                    .addOnSuccessListener(location -> {
+//                        if (location != null) {
+//                            LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+//                            mMap.addMarker(new MarkerOptions()
+//                                    .position(myLatLng)
+//                                    .title("Ви тут"));
+//
+//                            saveLastKnownLocation(location.getLatitude(), location.getLongitude());
+//                        }
+//                    });
 
         } else {
             ActivityCompat.requestPermissions(requireActivity(),

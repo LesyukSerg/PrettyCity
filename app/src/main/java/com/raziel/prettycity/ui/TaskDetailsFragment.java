@@ -44,7 +44,7 @@ public class TaskDetailsFragment extends Fragment {
 
     private TextView textTitle, textStatus, textDescription, textCoordinates, textCompletedAt;
     private ImageView imageBefore, imageAfter;
-    private Button buttonUpdateStatus, buttonEditCoordinates;
+    private Button buttonUpdateStatus, buttonEditCoordinates, buttonBuildRoute;
 
     private TaskDao taskDao;
     private Task currentTask;
@@ -72,6 +72,16 @@ public class TaskDetailsFragment extends Fragment {
 
         buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
         buttonEditCoordinates = view.findViewById(R.id.buttonEditCoordinates);
+        buttonBuildRoute = view.findViewById(R.id.buttonBuildRoute);
+
+        buttonBuildRoute.setOnClickListener(v -> {
+            if (currentTask != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("target_lat", String.valueOf(currentTask.latitude));
+                bundle.putString("target_lon", String.valueOf(currentTask.longitude));
+                Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_mapsFragment, bundle);
+            }
+        });
 
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
 

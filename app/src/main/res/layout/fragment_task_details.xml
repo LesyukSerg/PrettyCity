@@ -20,6 +20,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <Button
+            android:id="@+id/buttonBuildRoute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Будувати шлях"
+            android:layout_marginTop="8dp"/>
+
         <ImageView
             android:id="@+id/imageBefore"
             android:layout_width="match_parent"
