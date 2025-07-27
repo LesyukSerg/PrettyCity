@@ -22,4 +22,7 @@
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/activity_main_drawer" />
+
+    <include layout="@layout/sync_overlay" />
+
 </androidx.drawerlayout.widget.DrawerLayout>

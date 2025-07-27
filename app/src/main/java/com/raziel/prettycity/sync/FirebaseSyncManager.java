@@ -20,6 +20,12 @@ public class FirebaseSyncManager {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final TaskDao taskDao;
 
+    private SyncProgressListener syncListener;
+
+    public void setSyncProgressListener(SyncProgressListener listener) {
+        this.syncListener = listener;
+    }
+
     public FirebaseSyncManager(TaskDao taskDao) {
         this.taskDao = taskDao;
     }
@@ -28,27 +34,51 @@ public class FirebaseSyncManager {
     public void syncToCloud(List<Task> tasks) {
         Executors.newSingleThreadExecutor().execute(() -> {
             List<Task> unsyncedTasks = taskDao.getUnsyncedTasks();
+            int total = unsyncedTasks.size();
+            int[] progress = {0};
+
+            if (syncListener != null) {
+                syncListener.onSyncStarted("up");
+            }
 
             for (Task task : unsyncedTasks) {
                 db.collection("tasks")
                         .document(String.valueOf(task.id))
                         .set(task)
-                        .addOnSuccessListener(aVoid -> {
-                            task.synced = true;
-                            taskDao.update(task); // ✅ позначаємо як синхронізовану
-                        })
+//                        .addOnSuccessListener(aVoid -> {
+//                            task.synced = true;
+//                            Executors.newSingleThreadExecutor().execute(() -> taskDao.update(task));
+//                        })
                         .addOnFailureListener(e -> Log.e("FirebaseSync", "Upload failed", e));
 
-                uploadTaskPhotos(task);
+                uploadTaskPhotos(task, () -> {
+                    progress[0]++;
+                    if (syncListener != null) {
+                        syncListener.onProgress(progress[0], total);
+                        if (progress[0] == total) {
+                            syncListener.onSyncCompleted();
+                        }
+                    }
+                });
+            }
+
+            if (total == 0 && syncListener != null) {
+                syncListener.onSyncCompleted();
             }
         });
     }
+
 
     // Download from Firebase and merge
     public void syncFromCloud() {
         db.collection("tasks").get()
                 .addOnSuccessListener(querySnapshot -> {
                     List<Task> remoteTasks = new ArrayList<>();
+                    int[] progress = {0};
+
+                    if (syncListener != null) {
+                        syncListener.onSyncStarted("down");
+                    }
 
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         Task remoteTask = doc.toObject(Task.class);
@@ -56,29 +86,47 @@ public class FirebaseSyncManager {
                         remoteTasks.add(remoteTask);
                     }
 
-                    Executors.newSingleThreadExecutor().execute(() -> {
-                        for (Task remoteTask : remoteTasks) {
-                            Task local = taskDao.getById(remoteTask.id).getValue();
-                            if (local == null) {
-                                taskDao.insert(remoteTask);
-                            } else {
-                                taskDao.update(remoteTask);
-                            }
+                    int total = remoteTasks.size();
 
-                            downloadTaskPhotosIfMissing(remoteTask);
+                    for (Task remoteTask : remoteTasks) {
+                        Task local = taskDao.getById(remoteTask.id).getValue();
+                        if (local == null) {
+                            Executors.newSingleThreadExecutor().execute(() -> taskDao.insert(remoteTask));
+                        } else {
+                            Executors.newSingleThreadExecutor().execute(() -> taskDao.update(remoteTask));
                         }
-                    });
+
+                        downloadTaskPhotosIfMissing(remoteTask, () -> {
+                            progress[0]++;
+                            if (syncListener != null) {
+                                syncListener.onProgress(progress[0], total);
+                                if (progress[0] == total) {
+                                    syncListener.onSyncCompleted();
+                                }
+                            }
+                        });
+                    }
+
+                    if (total == 0 && syncListener != null) {
+                        syncListener.onSyncCompleted();
+                    }
                 })
                 .addOnFailureListener(e -> Log.e("FirebaseSync", "Download failed", e));
     }
 
-    public void uploadTaskPhotos(Task task) {
-        uploadTaskPhoto(task.id, task.photoBeforePath, "before.jpg");
-        uploadTaskPhoto(task.id, task.photoAfterPath, "after.jpg");
+    public void uploadTaskPhotos(Task task, Runnable onComplete) {
+        uploadTaskPhoto(task.id, task.photoBeforePath, "before.jpg", () ->
+                uploadTaskPhoto(task.id, task.photoAfterPath, "after.jpg", onComplete));
+
+        task.synced = true;
+        Executors.newSingleThreadExecutor().execute(() -> taskDao.update(task));
     }
 
-    public void uploadTaskPhoto(Integer id, String localPath, String fileName) {
-        if (localPath == null) return;
+    public void uploadTaskPhoto(Integer id, String localPath, String fileName, Runnable onComplete) {
+        if (localPath == null || !(new File(localPath).exists())) {
+            onComplete.run();
+            return;
+        }
 
         Uri fileUri = Uri.fromFile(new File(localPath));
         StorageReference storageRef = FirebaseStorage.getInstance().getReference()
@@ -87,21 +135,30 @@ public class FirebaseSyncManager {
         storageRef.putFile(fileUri)
                 .addOnSuccessListener(taskSnapshot -> {
                     Log.d("PhotoUpload", "Uploaded " + fileName + " for task " + id);
+                    onComplete.run();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("PhotoUpload", "Failed to upload photo: " + e.getMessage());
+                    Log.e("PhotoUpload", id + " Failed to upload " + fileName + " photo: " + e.getMessage());
+                    onComplete.run();
                 });
     }
 
-    public void downloadTaskPhotosIfMissing(Task task) {
-        downloadTaskPhotoIfMissing(task.id, task.photoBeforePath, "before.jpg");
-        downloadTaskPhotoIfMissing(task.id, task.photoAfterPath, "after.jpg");
+    public void downloadTaskPhotosIfMissing(Task task, Runnable onComplete) {
+        downloadTaskPhotoIfMissing(task.id, task.photoBeforePath, "before.jpg", () ->
+                downloadTaskPhotoIfMissing(task.id, task.photoAfterPath, "after.jpg", onComplete));
     }
 
-    public void downloadTaskPhotoIfMissing(Integer id, String localPath, String fileName) {
-        if (localPath == null) return;
+    public void downloadTaskPhotoIfMissing(Integer id, String localPath, String fileName, Runnable onComplete) {
+        if (localPath == null)  { onComplete.run(); return; }
+
         File localFile = new File(localPath);
-        if (localFile.exists()) return;
+        File parentDir = localFile.getParentFile();
+
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        if (localFile.exists())  { onComplete.run(); return; }
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference()
                 .child("PrettyCityPhotos/" + id + "/" + fileName);
@@ -109,9 +166,11 @@ public class FirebaseSyncManager {
         storageRef.getFile(localFile)
                 .addOnSuccessListener(taskSnapshot -> {
                     Log.d("PhotoDownload", "Downloaded " + fileName + " for task " + id);
+                    onComplete.run();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("PhotoDownload", "Failed to download photo: " + e.getMessage());
+                    Log.e("PhotoDownload", id + " Failed to download " + fileName + " photo: " + e.getMessage());
+                    onComplete.run();
                 });
     }
 

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -250,19 +251,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
-
-//            fusedLocationClient.getLastLocation()
-//                    .addOnSuccessListener(location -> {
-//                        if (location != null) {
-//                            LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-//                            mMap.addMarker(new MarkerOptions()
-//                                    .position(myLatLng)
-//                                    .title("Ви тут"));
-//
-//                            saveLastKnownLocation(location.getLatitude(), location.getLongitude());
-//                        }
-//                    });
-
         } else {
             ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);

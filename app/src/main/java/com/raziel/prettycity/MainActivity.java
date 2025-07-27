@@ -1,14 +1,23 @@
 package com.raziel.prettycity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Menu;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
@@ -23,6 +32,8 @@ import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
 import com.raziel.prettycity.databinding.ActivityMainBinding;
 import com.raziel.prettycity.sync.FirebaseSyncManager;
+import com.raziel.prettycity.sync.SyncProgressListener;
+import com.raziel.prettycity.utils.SetPermissions;
 
 import java.util.List;
 
@@ -33,9 +44,15 @@ public class MainActivity extends AppCompatActivity {
 
     private TaskDao taskDao; // ✅ Додано
 
+    private SetPermissions setPermissions;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setPermissions = new SetPermissions(this);
+        setPermissions.requestPermissionsInSequence();
 
         FirebaseApp.initializeApp(this); // ✅ Ініціалізація Firebase (на всяк випадок)
 
@@ -60,6 +77,31 @@ public class MainActivity extends AppCompatActivity {
         taskDao = AppDatabase.getDatabase(this).taskDao();
 
         FirebaseSyncManager syncManager = new FirebaseSyncManager(taskDao);
+
+        FrameLayout syncOverlay = findViewById(R.id.sync_overlay);
+        TextView syncText = findViewById(R.id.sync_text);
+
+        syncManager.setSyncProgressListener(new SyncProgressListener() {
+            @Override
+            public void onSyncStarted(String direction) {
+                runOnUiThread(() -> {
+                    syncOverlay.setVisibility(View.VISIBLE);
+                    syncText.setText(direction.equals("up") ? "Вивантаження..." : "Завантаження...");
+                });
+            }
+
+            @Override
+            public void onProgress(int current, int total) {
+                runOnUiThread(() -> {
+                    syncText.setText(String.format("Прогрес: %d / %d", current, total));
+                });
+            }
+
+            @Override
+            public void onSyncCompleted() {
+                runOnUiThread(() -> syncOverlay.setVisibility(View.GONE));
+            }
+        });
 
         // Синхронізація при старті
         syncManager.syncFromCloud();
@@ -97,4 +139,12 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        setPermissions.handlePermissionsResult(requestCode, permissions, grantResults);
+    }
+
 }

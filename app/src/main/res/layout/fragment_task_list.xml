@@ -16,4 +16,6 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/add_task"
         android:src="@android:drawable/ic_input_add" />
+
+    <include layout="@layout/sync_overlay" />
 </FrameLayout>

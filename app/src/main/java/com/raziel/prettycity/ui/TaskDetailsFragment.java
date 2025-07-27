@@ -35,6 +35,7 @@ import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
+import com.raziel.prettycity.sync.FirebaseSyncManager;
 import com.raziel.prettycity.utils.Utils;
 
 import java.io.File;
@@ -84,6 +85,7 @@ public class TaskDetailsFragment extends Fragment {
         });
 
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
+        FirebaseSyncManager syncManager = new FirebaseSyncManager(taskDao);
 
         if (getArguments() != null) {
             taskId = getArguments().getInt("taskId", -1);

@@ -54,4 +54,6 @@
             android:contentDescription="Поточна задача"
             android:src="@android:drawable/ic_menu_directions" />
     </LinearLayout>
+
+    <include layout="@layout/sync_overlay" />
 </FrameLayout>
