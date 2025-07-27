@@ -85,7 +85,7 @@ public class TaskListFragment extends Fragment {
                         .setMessage("Цю дію неможливо скасувати.")
                         .setPositiveButton("Так", (dialog, which) -> {
                             Executors.newSingleThreadExecutor().execute(() -> {
-                                taskDao.delete(task);
+                                taskDao.markAsDeleted(task.id);
                             });
                         })
                         .setNegativeButton("Скасувати", (dialog, which) -> {

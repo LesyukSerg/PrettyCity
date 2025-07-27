@@ -9,6 +9,8 @@ public class Task {
 
     @PrimaryKey(autoGenerate = true)
     public int id;
+    public boolean synced;
+    public boolean deleted;
     public String title;
 
     public double latitude;
@@ -24,6 +26,8 @@ public class Task {
     public int priority;  // 1 - 5
     public String description;
     public String type;   // кущі / дерево / інше
+
+    public Task() {}
 
     public Task(double latitude, double longitude, String photoBeforePath, String status, String createdAt) {
         this.latitude = latitude;

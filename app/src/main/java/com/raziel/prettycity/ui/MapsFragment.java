@@ -148,7 +148,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         enableMyLocation();
 
         taskDao.getAll().observe(getViewLifecycleOwner(), tasks -> {
-            this.allTasks = tasks; // збережемо задачі локально
+            this.allTasks = tasks;
             reloadMarkers();
         });
     }
@@ -245,7 +245,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             }
         });
     }
-
 
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)

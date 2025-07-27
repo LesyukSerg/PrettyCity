@@ -117,6 +117,7 @@ public class TaskDetailsFragment extends Fragment {
                                     task.photoBeforePath = newFile.getAbsolutePath();
 
                                     Executors.newSingleThreadExecutor().execute(() -> {
+                                        task.synced = false;
                                         taskDao.update(task);
                                     });
 
@@ -157,6 +158,7 @@ public class TaskDetailsFragment extends Fragment {
                                     task.photoAfterPath = newFile.getAbsolutePath();
 
                                     Executors.newSingleThreadExecutor().execute(() -> {
+                                        task.synced = false;
                                         taskDao.update(task);
                                     });
 
@@ -206,6 +208,7 @@ public class TaskDetailsFragment extends Fragment {
                     currentTask.longitude = Double.parseDouble(newLng);
 
                     Executors.newSingleThreadExecutor().execute(() -> {
+                        currentTask.synced = false;
                         taskDao.update(currentTask);
                     });
                 });
@@ -265,6 +268,7 @@ public class TaskDetailsFragment extends Fragment {
                         }
 
                         Executors.newSingleThreadExecutor().execute(() -> {
+                            currentTask.synced = false;
                             taskDao.update(currentTask);
                         });
 
@@ -311,6 +315,7 @@ public class TaskDetailsFragment extends Fragment {
                         }
 
                         Executors.newSingleThreadExecutor().execute(() -> {
+                            currentTask.synced = false;
                             taskDao.update(currentTask);
                         });
 
