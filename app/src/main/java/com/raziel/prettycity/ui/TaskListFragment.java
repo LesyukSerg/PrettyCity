@@ -26,7 +26,12 @@ import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
+import com.raziel.prettycity.sync.FirebaseSyncManager;
+import com.raziel.prettycity.utils.Utils;
+
 import android.view.View;
+
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -85,6 +90,13 @@ public class TaskListFragment extends Fragment {
                         .setMessage("Цю дію неможливо скасувати.")
                         .setPositiveButton("Так", (dialog, which) -> {
                             Executors.newSingleThreadExecutor().execute(() -> {
+                                FirebaseSyncManager syncManager = new FirebaseSyncManager(taskDao);
+                                syncManager.deleteTaskPhoto(task.id, task.photoBeforePath, "before.jpg");
+                                syncManager.deleteTaskPhoto(task.id, task.photoAfterPath, "after.jpg");
+
+                                Utils.deleteTaskPhoto(task.photoBeforePath);
+                                Utils.deleteTaskPhoto(task.photoAfterPath);
+
                                 taskDao.markAsDeleted(task.id);
                             });
                         })

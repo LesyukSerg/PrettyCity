@@ -51,15 +51,17 @@ public class FirebaseSyncManager {
 //                        })
                         .addOnFailureListener(e -> Log.e("FirebaseSync", "Upload failed", e));
 
-                uploadTaskPhotos(task, () -> {
-                    progress[0]++;
-                    if (syncListener != null) {
-                        syncListener.onProgress(progress[0], total);
-                        if (progress[0] == total) {
-                            syncListener.onSyncCompleted();
+                if (!task.deleted) {
+                    uploadTaskPhotos(task, () -> {
+                        progress[0]++;
+                        if (syncListener != null) {
+                            syncListener.onProgress(progress[0], total);
+                            if (progress[0] == total) {
+                                syncListener.onSyncCompleted();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
 
             if (total == 0 && syncListener != null) {
@@ -67,7 +69,6 @@ public class FirebaseSyncManager {
             }
         });
     }
-
 
     // Download from Firebase and merge
     public void syncFromCloud() {
@@ -96,15 +97,17 @@ public class FirebaseSyncManager {
                             Executors.newSingleThreadExecutor().execute(() -> taskDao.update(remoteTask));
                         }
 
-                        downloadTaskPhotosIfMissing(remoteTask, () -> {
-                            progress[0]++;
-                            if (syncListener != null) {
-                                syncListener.onProgress(progress[0], total);
-                                if (progress[0] == total) {
-                                    syncListener.onSyncCompleted();
+                        if (!remoteTask.deleted) {
+                            downloadTaskPhotosIfMissing(remoteTask, () -> {
+                                progress[0]++;
+                                if (syncListener != null) {
+                                    syncListener.onProgress(progress[0], total);
+                                    if (progress[0] == total) {
+                                        syncListener.onSyncCompleted();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
 
                     if (total == 0 && syncListener != null) {
@@ -149,7 +152,10 @@ public class FirebaseSyncManager {
     }
 
     public void downloadTaskPhotoIfMissing(Integer id, String localPath, String fileName, Runnable onComplete) {
-        if (localPath == null)  { onComplete.run(); return; }
+        if (localPath == null) {
+            onComplete.run();
+            return;
+        }
 
         File localFile = new File(localPath);
         File parentDir = localFile.getParentFile();
@@ -158,7 +164,10 @@ public class FirebaseSyncManager {
             parentDir.mkdirs();
         }
 
-        if (localFile.exists())  { onComplete.run(); return; }
+        if (localFile.exists()) {
+            onComplete.run();
+            return;
+        }
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference()
                 .child("PrettyCityPhotos/" + id + "/" + fileName);
@@ -171,6 +180,23 @@ public class FirebaseSyncManager {
                 .addOnFailureListener(e -> {
                     Log.e("PhotoDownload", id + " Failed to download " + fileName + " photo: " + e.getMessage());
                     onComplete.run();
+                });
+    }
+
+    public void deleteTaskPhoto(Integer id, String localPath, String remoteFileName) {
+        if (localPath == null || !(new File(localPath).exists())) {
+            return;
+        }
+
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference()
+                .child("PrettyCityPhotos/" + id + "/" + remoteFileName);
+
+        storageRef.delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("PhotoDelete", "Deleted " + remoteFileName + " for task " + id);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("PhotoDelete", "Deleted " + remoteFileName + " for task " + id);
                 });
     }
 

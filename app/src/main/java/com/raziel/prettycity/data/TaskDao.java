@@ -33,10 +33,6 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks WHERE synced = 0")
     List<Task> getUnsyncedTasks();
 
-    @Query("SELECT * FROM tasks WHERE synced = 0 LIMIT :limit")
-    List<Task> getUnsyncedTasksLimited(int limit);
-
-
     @Update
     void update(Task task);
 

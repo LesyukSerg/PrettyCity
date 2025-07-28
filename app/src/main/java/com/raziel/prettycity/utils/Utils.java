@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +39,19 @@ public class Utils {
         }
     }
 
+    public static void deleteTaskPhoto(String photoPath){
+        if (photoPath != null) {
+            try {
+                File file = new File(photoPath);
+                if (file.exists()) file.delete();
+                Log.d("PhotoDelete", "Deleted " + photoPath);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("PhotoDelete", "FAIL Delete" + photoPath + " - " + e.getMessage());
+            }
+        }
+    }
+
 
     public static double convertToDegree(String stringDMS) {
         if (stringDMS == null) return 0.0;
@@ -55,5 +69,4 @@ public class Utils {
 
         return D + (M / 60) + (S / 3600);
     }
-
 }
