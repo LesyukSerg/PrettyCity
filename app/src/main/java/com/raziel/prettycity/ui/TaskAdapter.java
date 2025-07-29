@@ -80,7 +80,7 @@ public class TaskAdapter extends ListAdapter<Task, TaskAdapter.TaskViewHolder> {
         void bind(Task task) {
             titleView.setText(task.id + ". " + (task.title != null ? task.title : "Без назви"));
             descriptionView.setText(task.description != null ? task.description : "");
-            statusView.setText(task.status);
+            statusView.setText(task.priority + " | " + task.status);
 
             if (TaskAdapter.currentLat != null && TaskAdapter.currentLon != null && task.latitude != 0 && task.longitude != 0) {
                 float[] result = new float[1];

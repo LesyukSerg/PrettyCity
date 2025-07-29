@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sort_name_asc"
+        android:title="Назва (А-Я)" />
+    <item
+        android:id="@+id/sort_name_desc"
+        android:title="Назва (Я-А)" />
+    <item
+        android:id="@+id/sort_priority_asc"
+        android:title="Пріоритет (↑)" />
+    <item
+        android:id="@+id/sort_priority_desc"
+        android:title="Пріоритет (↓)" />
+    <item
+        android:id="@+id/sort_distance_asc"
+        android:title="Дальність (ближчі)" />
+    <item
+        android:id="@+id/sort_distance_desc"
+        android:title="Дальність (дальші)" />
+</menu>

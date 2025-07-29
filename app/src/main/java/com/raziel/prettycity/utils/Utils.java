@@ -52,7 +52,6 @@ public class Utils {
         }
     }
 
-
     public static double convertToDegree(String stringDMS) {
         if (stringDMS == null) return 0.0;
 

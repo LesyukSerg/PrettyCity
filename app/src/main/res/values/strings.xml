@@ -27,10 +27,10 @@
     <string name="add_photo">Додати фото</string>
 
     <string-array name="priority_values">
-        <item value="4">Низький приорітет</item>
-        <item value="3">Середній приорітет</item>
-        <item value="2">Високий приорітет</item>
         <item value="1">Негайно</item>
+        <item value="2">Високий приорітет</item>
+        <item value="3">Середній приорітет</item>
+        <item value="4">Низький приорітет</item>
     </string-array>
 
     <string-array name="status_array">

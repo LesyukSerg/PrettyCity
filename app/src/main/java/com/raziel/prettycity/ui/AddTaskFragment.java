@@ -66,6 +66,7 @@ public class AddTaskFragment extends Fragment {
         editTextCreatedAt = view.findViewById(R.id.editTextCreatedAt);
         spinnerStatus = view.findViewById(R.id.spinnerStatus);
         spinnerPriority = view.findViewById(R.id.spinnerPriority);
+        spinnerPriority.setSelection(3);
 
         buttonSelectPhoto.setOnClickListener(v -> selectPhoto());
         buttonSaveTask.setOnClickListener(v -> saveTask());
