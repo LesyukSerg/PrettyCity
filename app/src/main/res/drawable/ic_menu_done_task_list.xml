@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Галочка 1 -->
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M4,6l1.5,1.5 3,-3"/>
+
+    <!-- Лінія 1 -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M10,6h10v1.5H10z"/>
+
+    <!-- Галочка 2 -->
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M4,12l1.5,1.5 3,-3"/>
+
+    <!-- Лінія 2 -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M10,12h10v1.5H10z"/>
+
+    <!-- Галочка 3 -->
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M4,18l1.5,1.5 3,-3"/>
+
+    <!-- Лінія 3 -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M10,18h10v1.5H10z"/>
+</vector>

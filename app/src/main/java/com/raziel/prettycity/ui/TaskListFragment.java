@@ -1,7 +1,6 @@
 package com.raziel.prettycity.ui;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,8 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.LiveData;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,7 +33,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -55,6 +52,8 @@ public class TaskListFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        boolean showDone = requireArguments().getBoolean("showDone");
+
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true);
 
@@ -78,7 +77,8 @@ public class TaskListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         taskDao = AppDatabase.getDatabase(getContext()).taskDao();
-        taskDao.getAll().observe(getViewLifecycleOwner(), tasks -> {
+        LiveData<List<Task>> taskSource = showDone ? taskDao.getAllDone() : taskDao.getAllUndone();
+        taskSource.observe(getViewLifecycleOwner(), tasks -> {
             currentTasks = tasks;
             applySort(currentSort);
         });

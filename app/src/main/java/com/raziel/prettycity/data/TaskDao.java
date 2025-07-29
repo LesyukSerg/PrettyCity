@@ -18,6 +18,11 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks WHERE deleted=0")
     LiveData<List<Task>> getAll();
 
+    @Query("SELECT * FROM tasks WHERE deleted=0 AND status!='done'")
+    LiveData<List<Task>> getAllUndone();
+    @Query("SELECT * FROM tasks WHERE deleted=0 AND status='done'")
+    LiveData<List<Task>> getAllDone();
+
     @Query("SELECT * FROM tasks WHERE deleted=0 AND id = :taskId")
     LiveData<Task> getById(int taskId);
 
