@@ -23,10 +23,19 @@
             android:layout_height="wrap_content"
             android:text="Обрати фото" />
 
-        <TextView
-        android:id="@+id/textCoordinates"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <Spinner
+            android:id="@+id/spinnerStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:entries="@array/status_array" />
+
+        <Spinner
+            android:id="@+id/spinnerPriority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:entries="@array/priority_values" />
 
         <EditText
             android:id="@+id/editTextTitle"
@@ -46,17 +55,11 @@
             android:layout_height="wrap_content"
             android:hint="Дата створення (yyyy-MM-dd)" />
 
-        <Spinner
-            android:id="@+id/spinnerStatus"
+        <TextView
+            android:id="@+id/textCoordinates"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/status_array" />
-
-        <Spinner
-            android:id="@+id/spinnerPriority"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:entries="@array/priority_array" />
+            android:text="Lat:0 Lon:0" />
 
         <Button
             android:id="@+id/buttonSaveTask"

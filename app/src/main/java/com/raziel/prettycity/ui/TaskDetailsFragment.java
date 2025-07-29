@@ -25,8 +25,11 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +54,8 @@ public class TaskDetailsFragment extends Fragment {
     private Task currentTask;
     private Uri photoUri;
     private int taskId;
+    public int priority; // від 1 до 5
+
 
     public TaskDetailsFragment() {
     }
@@ -84,8 +89,17 @@ public class TaskDetailsFragment extends Fragment {
             }
         });
 
+        Spinner spinnerPriority = view.findViewById(R.id.spinnerPriority);
+
+        ArrayAdapter<CharSequence> adapterPriority = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.priority_values,
+                android.R.layout.simple_spinner_item
+        );
+        adapterPriority.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerPriority.setAdapter(adapterPriority);
+
         taskDao = AppDatabase.getDatabase(requireContext()).taskDao();
-        FirebaseSyncManager syncManager = new FirebaseSyncManager(taskDao);
 
         if (getArguments() != null) {
             taskId = getArguments().getInt("taskId", -1);
@@ -99,7 +113,7 @@ public class TaskDetailsFragment extends Fragment {
                         textTitle.setText(task.title);
                         textStatus.setText("Status: " + task.status);
                         textDescription.setText(task.description);
-                        textCoordinates.setText("Lat: " + task.latitude + ", Lng: " + task.longitude);
+                        textCoordinates.setText("Lat: " + task.latitude + ", Lon: " + task.longitude);
 
                         if (task.photoBeforePath != null) {
                             File originalFile = new File(task.photoBeforePath);
@@ -139,9 +153,13 @@ public class TaskDetailsFragment extends Fragment {
                             });
                         }
 
+                        spinnerPriority.setSelection(currentTask.priority - 1);
+
                         if ("done".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
                             textCompletedAt.setText("Дата виконання: " + task.completedAt);
                             textCompletedAt.setVisibility(View.VISIBLE);
+                            buttonUpdateStatus.setVisibility(View.GONE);
+                            spinnerPriority.setEnabled(false);
 
                             File originalAfterFile = new File(task.photoAfterPath);
                             String prettyCityDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/PrettyCity";
@@ -164,7 +182,7 @@ public class TaskDetailsFragment extends Fragment {
                                         taskDao.update(task);
                                     });
 
-                                    originalAfterFile.delete(); // (опційно) видалити старий
+                                    originalAfterFile.delete();
                                 }
                             }
 
@@ -181,22 +199,39 @@ public class TaskDetailsFragment extends Fragment {
 
                         } else {
                             imageAfter.setVisibility(View.GONE);
-                        }
 
-                        buttonUpdateStatus.setOnClickListener(v -> {
-                            String[] options = {"Зробити фото", "Вибрати з галереї"};
-                            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                                    .setTitle("Додати фото")
-                                    .setItems(options, (dialog, which) -> {
-                                        if (which == 0) {
-                                            takePhoto();
-                                        } else {
-                                            Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                                            afterPhotoPickerLauncher.launch(pickIntent);
-                                        }
-                                    })
-                                    .show();
-                        });
+                            spinnerPriority.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                @Override
+                                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                    int newPriority = position + 1;
+                                    if (currentTask != null && currentTask.priority != newPriority) {
+                                        currentTask.priority = newPriority;
+                                        Executors.newSingleThreadExecutor().execute(() -> {
+                                            currentTask.synced = false;
+                                            taskDao.update(currentTask);
+                                        });
+                                    }
+                                }
+
+                                @Override
+                                public void onNothingSelected(AdapterView<?> parent) {}
+                            });
+
+                            buttonUpdateStatus.setOnClickListener(v -> {
+                                String[] options = {"Зробити фото", "Вибрати з галереї"};
+                                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                                        .setTitle("Додати фото")
+                                        .setItems(options, (dialog, which) -> {
+                                            if (which == 0) {
+                                                takePhoto();
+                                            } else {
+                                                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                                afterPhotoPickerLauncher.launch(pickIntent);
+                                            }
+                                        })
+                                        .show();
+                            });
+                        }
                     }
                 });
 
@@ -221,6 +256,7 @@ public class TaskDetailsFragment extends Fragment {
                     args.putString("longitude", String.valueOf(currentTask.longitude));
                     Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_editLocationFragment, args);
                 });
+
             }
         }
     }

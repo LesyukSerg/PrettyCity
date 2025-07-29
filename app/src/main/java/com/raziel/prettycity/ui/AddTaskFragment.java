@@ -159,7 +159,7 @@ public class AddTaskFragment extends Fragment {
                         buttonSaveTask.setEnabled(true);
 
                     } catch (Exception e) {
-                        Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.toast_no_exif, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -199,7 +199,7 @@ public class AddTaskFragment extends Fragment {
                         buttonSaveTask.setEnabled(true);
 
                     } catch (Exception e) {
-                        Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.toast_no_exif, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -223,9 +223,9 @@ public class AddTaskFragment extends Fragment {
     }
 
     private void selectPhoto() {
-        String[] options = {"Зробити фото", "Вибрати з галереї"};
+        String[] options = {String.valueOf(R.string.open_camera), String.valueOf(R.string.open_gallery)};
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Додати фото")
+                .setTitle(R.string.add_photo)
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
                         takePhoto();
@@ -252,7 +252,7 @@ public class AddTaskFragment extends Fragment {
         }
 
         if (title.isEmpty()) {
-            Toast.makeText(requireContext(), "Введіть назву задачі", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.toast_enter_title, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -270,7 +270,7 @@ public class AddTaskFragment extends Fragment {
             Log.d("AddTask", "Inserted task with title: " + task.title + " at " + task.latitude + ", " + task.longitude);
 
             requireActivity().runOnUiThread(() -> {
-                Toast.makeText(requireContext(), "Задачу додано №" + task.id, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.toast_task_added + " " + task.title, Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigate(R.id.mainMap);
             });
         }).start();
