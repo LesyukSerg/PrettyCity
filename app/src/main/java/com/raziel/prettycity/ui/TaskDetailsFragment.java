@@ -43,7 +43,6 @@ import com.raziel.prettycity.R;
 import com.raziel.prettycity.data.AppDatabase;
 import com.raziel.prettycity.data.Task;
 import com.raziel.prettycity.data.TaskDao;
-import com.raziel.prettycity.sync.FirebaseSyncManager;
 import com.raziel.prettycity.utils.Utils;
 
 import java.io.File;
