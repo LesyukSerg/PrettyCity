@@ -221,9 +221,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
             if (!shouldShow) continue;
 
-            BitmapDescriptor icon = "done".equalsIgnoreCase(task.status)
-                    ? BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-                    : BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+            BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+
+            switch (task.status) {
+                case "planned":
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+                    break;
+                case "progress":
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
+                    break;
+                case "done":
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
+                    break;
+            }
 
             mMap.addMarker(new MarkerOptions()
                     .position(position)
