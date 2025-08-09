@@ -12,7 +12,7 @@
             android:id="@+id/textTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Назва задачі" />
+            android:hint="@string/task_name" />
 
         <TextView
             android:id="@+id/textStatus"
@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:text="Дата виконання (yyyy-MM-dd)" />
+            android:text="@string/date_done_empty" />
 
         <Spinner
             android:id="@+id/spinnerPriority"
@@ -38,14 +38,14 @@
             android:id="@+id/buttonBuildRoute"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Будувати шлях"
+            android:text="@string/make_route"
             android:layout_marginTop="8dp"/>
 
         <Button
             android:id="@+id/buttonSetInWork"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="В роботі"
+            android:text="@string/set_in_progress"
             android:layout_marginTop="8dp"/>
 
         <ImageView
@@ -66,7 +66,7 @@
             android:id="@+id/buttonEditCoordinates"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Edit Coordinates on Map" />
+            android:text="@string/edit_coord" />
 
         <TextView
             android:id="@+id/textDescription"
@@ -84,6 +84,6 @@
             android:id="@+id/buttonUpdateStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Mark as Completed" />
+            android:text="@string/set_done" />
     </LinearLayout>
 </ScrollView>

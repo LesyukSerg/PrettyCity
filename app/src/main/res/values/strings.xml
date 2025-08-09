@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Pretty City</string>
+    <string name="app_name2">PrettyCity</string>
     <string name="nav_header_title">Pretty City</string>
     <string name="map_key">AIzaSyBGG70AxzomOdKVVyfpn-_2dwHbM71vHR8</string>
 
@@ -18,14 +19,24 @@
     <string name="menu_tasklist_done">Done Tasklist</string>
     <string name="menu_map">Map</string>
     <string name="complete">Complete</string>
+    <string name="task_name">Task name</string>
+    <string name="date_done_empty">Done date (yyyy-MM-dd)</string>
+    <string name="date_done">Done date </string>
+    <string name="make_route">Make route</string>
+    <string name="set_in_progress">In progress</string>
+    <string name="edit_coord">Edit Coordinates on Map</string>
+    <string name="set_done">Mark as Completed</string>
+    <string name="status">Status: </string>
 
-    <string name="toast_no_exif">Не вдалося прочитати EXIF</string>
-    <string name="toast_enter_title">Введіть назву задачі</string>
-    <string name="toast_task_added">Задачу додано</string>
 
-    <string name="open_camera">Зробити фото</string>
-    <string name="open_gallery">Вибрати з галереї</string>
-    <string name="add_photo">Додати фото</string>
+    <string name="toast_no_exif">Cannot read EXIF</string>
+    <string name="toast_enter_title">Enter task name</string>
+    <string name="toast_task_added">Task added</string>
+    <string name="toast_saving">Saving…</string>
+
+    <string name="open_camera">Make photo</string>
+    <string name="open_gallery">Choose from gallery</string>
+    <string name="add_photo">Add photo</string>
 
     <string-array name="priority_keys">
         <item>1</item>
@@ -35,15 +46,15 @@
     </string-array>
 
     <string-array name="priority_values">
-        <item>Негайно</item>
-        <item>Високий приорітет</item>
-        <item>Середній приорітет</item>
-        <item>Низький приорітет</item>
+        <item>Immediately</item>
+        <item>High priority</item>
+        <item>Average priority</item>
+        <item>Low priority</item>
     </string-array>
 
     <string-array name="status_array">
-        <item value="planned">Planned</item>
-        <item value="progress">In progress</item>
-        <item value="done">Done</item>
+        <item>planned</item>
+        <item>progress</item>
+        <item>done</item>
     </string-array>
 </resources>

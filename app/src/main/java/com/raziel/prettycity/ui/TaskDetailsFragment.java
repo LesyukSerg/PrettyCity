@@ -93,7 +93,7 @@ public class TaskDetailsFragment extends Fragment {
 
         saveRunnable = () -> {
             if (currentTask != null) {
-                Toast.makeText(requireContext(), "Зберігаю...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.toast_saving), Toast.LENGTH_SHORT).show();
                 currentTask.synced = false;
                 currentTask.title = textTitle.getText().toString();
                 Executors.newSingleThreadExecutor().execute(() -> {
@@ -167,7 +167,7 @@ public class TaskDetailsFragment extends Fragment {
 
                         textTitle.setText(task.title);
 
-                        textStatus.setText("Status: " + task.status);
+                        textStatus.setText(getString(R.string.status) + task.status);
                         textDescription.setText(task.description);
                         textCoordinates.setText("Lat: " + task.latitude + ", Lon: " + task.longitude);
 
@@ -193,7 +193,7 @@ public class TaskDetailsFragment extends Fragment {
                                         taskDao.update(task);
                                     });
 
-                                    originalFile.delete(); // (опційно) видалити старий
+                                    originalFile.delete();
                                 }
                             }
 
@@ -212,7 +212,7 @@ public class TaskDetailsFragment extends Fragment {
                         spinnerPriority.setSelection(currentTask.priority - 1);
 
                         if ("done".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
-                            textCompletedAt.setText("Дата виконання: " + task.completedAt);
+                            textCompletedAt.setText(getString(R.string.date_done) + task.completedAt);
                             textCompletedAt.setVisibility(View.VISIBLE);
                             buttonUpdateStatus.setVisibility(View.GONE);
                             spinnerPriority.setEnabled(false);
@@ -357,12 +357,12 @@ public class TaskDetailsFragment extends Fragment {
                                 dateDone = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
                             }
 
-                            textCompletedAt.setText("Дата виконання: " + dateDone);
+                            textCompletedAt.setText(getString(R.string.date_done) + dateDone);
                             textCompletedAt.setVisibility(View.VISIBLE);
                             currentTask.completedAt = dateDone.trim();
 
                         } catch (Exception e) {
-                            Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), getString(R.string.toast_no_exif), Toast.LENGTH_SHORT).show();
                         }
 
                         Executors.newSingleThreadExecutor().execute(() -> {
@@ -378,7 +378,7 @@ public class TaskDetailsFragment extends Fragment {
                         buttonUpdateStatus.setVisibility(View.GONE);
                         buttonEditCoordinates.setVisibility(View.GONE);
                         imageAfter.setVisibility(View.VISIBLE);
-                        textStatus.setText("Status: " + currentTask.status);
+                        textStatus.setText(getString(R.string.status) + currentTask.status);
                     }
                 }
             }
@@ -404,12 +404,12 @@ public class TaskDetailsFragment extends Fragment {
                                 dateDone = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
                             }
 
-                            textCompletedAt.setText("Дата виконання: " + dateDone);
+                            textCompletedAt.setText(getString(R.string.date_done) + dateDone);
                             textCompletedAt.setVisibility(View.VISIBLE);
                             currentTask.completedAt = dateDone.trim();
 
                         } catch (Exception e) {
-                            Toast.makeText(requireContext(), "Не вдалося прочитати EXIF", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), getString(R.string.toast_no_exif), Toast.LENGTH_SHORT).show();
                         }
 
                         Executors.newSingleThreadExecutor().execute(() -> {
@@ -425,7 +425,7 @@ public class TaskDetailsFragment extends Fragment {
                         buttonUpdateStatus.setVisibility(View.GONE);
                         buttonEditCoordinates.setVisibility(View.GONE);
                         imageAfter.setVisibility(View.VISIBLE);
-                        textStatus.setText("Status: " + currentTask.status);
+                        textStatus.setText(getString(R.string.status) + currentTask.status);
                     }
                 }
             }
