@@ -224,7 +224,11 @@ public class AddTaskFragment extends Fragment {
     }
 
     private void selectPhoto() {
-        String[] options = {String.valueOf(R.string.open_camera), String.valueOf(R.string.open_gallery)};
+        String[] options = {
+                getString(R.string.open_camera),
+                getString(R.string.open_gallery)
+        };
+
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle(R.string.add_photo)
                 .setItems(options, (dialog, which) -> {
@@ -253,7 +257,7 @@ public class AddTaskFragment extends Fragment {
         }
 
         if (title.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.toast_enter_title, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.toast_enter_title), Toast.LENGTH_SHORT).show();
             return;
         }
 

@@ -8,12 +8,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
+        <EditText
             android:id="@+id/textTitle"
-            android:textSize="20sp"
-            android:textStyle="bold"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:hint="Назва задачі" />
 
         <TextView
             android:id="@+id/textStatus"
@@ -40,6 +39,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Будувати шлях"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/buttonSetInWork"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="В роботі"
             android:layout_marginTop="8dp"/>
 
         <ImageView

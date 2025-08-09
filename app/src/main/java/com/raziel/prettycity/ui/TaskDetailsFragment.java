@@ -21,13 +21,18 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -42,19 +47,25 @@ import com.raziel.prettycity.sync.FirebaseSyncManager;
 import com.raziel.prettycity.utils.Utils;
 
 import java.io.File;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 
 public class TaskDetailsFragment extends Fragment {
 
-    private TextView textTitle, textStatus, textDescription, textCoordinates, textCompletedAt;
+    private EditText textTitle;
+
+    private TextView textStatus, textDescription, textCoordinates, textCompletedAt;
     private ImageView imageBefore, imageAfter;
-    private Button buttonUpdateStatus, buttonEditCoordinates, buttonBuildRoute;
+    private Button buttonUpdateStatus, buttonEditCoordinates, buttonBuildRoute, buttonSetInWork;
 
     private TaskDao taskDao;
     private Task currentTask;
     private Uri photoUri;
     private int taskId;
     public int priority; // від 1 до 5
+
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable saveRunnable;
 
 
     public TaskDetailsFragment() {
@@ -79,6 +90,37 @@ public class TaskDetailsFragment extends Fragment {
         buttonUpdateStatus = view.findViewById(R.id.buttonUpdateStatus);
         buttonEditCoordinates = view.findViewById(R.id.buttonEditCoordinates);
         buttonBuildRoute = view.findViewById(R.id.buttonBuildRoute);
+        buttonSetInWork = view.findViewById(R.id.buttonSetInWork);
+
+        saveRunnable = () -> {
+            if (currentTask != null) {
+                Toast.makeText(requireContext(), "Зберігаю...", Toast.LENGTH_SHORT).show();
+                currentTask.synced = false;
+                currentTask.title = textTitle.getText().toString();
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    taskDao.update(currentTask);
+                });
+            }
+        };
+
+        textTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    if (!Objects.equals(currentTask.title, textTitle.getText().toString())) {
+                        handler.removeCallbacks(saveRunnable);
+                        handler.postDelayed(saveRunnable, 2000);
+                    }
+                });
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
 
         buttonBuildRoute.setOnClickListener(v -> {
             if (currentTask != null) {
@@ -87,6 +129,14 @@ public class TaskDetailsFragment extends Fragment {
                 bundle.putString("target_lon", String.valueOf(currentTask.longitude));
                 Navigation.findNavController(v).navigate(R.id.action_taskDetailsFragment_to_mapsFragment, bundle);
             }
+        });
+
+        buttonSetInWork.setOnClickListener(v -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                currentTask.synced = false;
+                currentTask.status = "progress";
+                taskDao.update(currentTask);
+            });
         });
 
         Spinner spinnerPriority = view.findViewById(R.id.spinnerPriority);
@@ -108,9 +158,16 @@ public class TaskDetailsFragment extends Fragment {
                     if (task != null) {
                         currentTask = task;
 
+                        if ("planned".equalsIgnoreCase(task.status)) {
+                            buttonSetInWork.setVisibility(View.VISIBLE);
+                        } else {
+                            buttonSetInWork.setVisibility(View.GONE);
+                        }
+
                         requireActivity().setTitle(task.title);
 
                         textTitle.setText(task.title);
+
                         textStatus.setText("Status: " + task.status);
                         textDescription.setText(task.description);
                         textCoordinates.setText("Lat: " + task.latitude + ", Lon: " + task.longitude);
@@ -214,13 +271,17 @@ public class TaskDetailsFragment extends Fragment {
                                 }
 
                                 @Override
-                                public void onNothingSelected(AdapterView<?> parent) {}
+                                public void onNothingSelected(AdapterView<?> parent) {
+                                }
                             });
 
                             buttonUpdateStatus.setOnClickListener(v -> {
-                                String[] options = {"Зробити фото", "Вибрати з галереї"};
+                                String[] options = {
+                                        getString(R.string.open_camera),
+                                        getString(R.string.open_gallery)
+                                };
                                 new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                                        .setTitle("Додати фото")
+                                        .setTitle(R.string.add_photo)
                                         .setItems(options, (dialog, which) -> {
                                             if (which == 0) {
                                                 takePhoto();
