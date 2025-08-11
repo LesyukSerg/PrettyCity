@@ -212,10 +212,11 @@ public class TaskDetailsFragment extends Fragment {
                         spinnerPriority.setSelection(currentTask.priority - 1);
 
                         if ("done".equalsIgnoreCase(task.status) && task.photoAfterPath != null) {
+                            spinnerPriority.setEnabled(false);
                             textCompletedAt.setText(getString(R.string.date_done) + task.completedAt);
                             textCompletedAt.setVisibility(View.VISIBLE);
-                            buttonUpdateStatus.setVisibility(View.GONE);
-                            spinnerPriority.setEnabled(false);
+                            buttonUpdateStatus.setVisibility(View.VISIBLE);
+                            buttonUpdateStatus.setText(getString(R.string.change_after_photo));
 
                             File originalAfterFile = new File(task.photoAfterPath);
                             String prettyCityDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/PrettyCity";
@@ -254,8 +255,6 @@ public class TaskDetailsFragment extends Fragment {
                             });
 
                         } else {
-                            imageAfter.setVisibility(View.GONE);
-
                             spinnerPriority.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -273,25 +272,25 @@ public class TaskDetailsFragment extends Fragment {
                                 public void onNothingSelected(AdapterView<?> parent) {
                                 }
                             });
-
-                            buttonUpdateStatus.setOnClickListener(v -> {
-                                String[] options = {
-                                        getString(R.string.open_camera),
-                                        getString(R.string.open_gallery)
-                                };
-                                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                                        .setTitle(R.string.add_photo)
-                                        .setItems(options, (dialog, which) -> {
-                                            if (which == 0) {
-                                                takePhoto();
-                                            } else {
-                                                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                                                afterPhotoPickerLauncher.launch(pickIntent);
-                                            }
-                                        })
-                                        .show();
-                            });
                         }
+
+                        buttonUpdateStatus.setOnClickListener(v -> {
+                            String[] options = {
+                                    getString(R.string.open_camera),
+                                    getString(R.string.open_gallery)
+                            };
+                            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                                    .setTitle(R.string.add_photo)
+                                    .setItems(options, (dialog, which) -> {
+                                        if (which == 0) {
+                                            takePhoto();
+                                        } else {
+                                            Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                            afterPhotoPickerLauncher.launch(pickIntent);
+                                        }
+                                    })
+                                    .show();
+                        });
                     }
                 });
 

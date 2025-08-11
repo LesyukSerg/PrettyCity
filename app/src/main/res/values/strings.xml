@@ -19,6 +19,7 @@
     <string name="menu_tasklist_done">Done Tasklist</string>
     <string name="menu_map">Map</string>
     <string name="complete">Complete</string>
+    <string name="change_after_photo">Change after photo</string>
     <string name="task_name">Task name</string>
     <string name="date_done_empty">Done date (yyyy-MM-dd)</string>
     <string name="date_done">Done date </string>
